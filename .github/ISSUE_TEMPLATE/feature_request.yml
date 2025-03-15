@@ -6,19 +6,21 @@ labels: ['Type: Enhancement']
 body:
   - type: markdown
     attributes:
-    label : What is the new idea 
       value: |
         *Please add an appropriate title for this feature request.*
 
-        Before suggesting, read the [documentation](https://github.com/SnipStudioDev/TagStudio/blob/main/docs/index.md) and search existing [issues](https://github.com/TagStudioDev/TagStudio/issues).
+        Before suggesting, read the documentation and search existing issues to avoid duplicates.
         Validate that you are using an up-to-date version[^1], your feature might already be implemented!
-        Questions, guidance, and usage goes in [discussions](https://github.com/SnipStudioDev/TagStudio/discussions). Invalid issues will be closed.
-
+        
         [^1]: This can mean latest release, pre-release, or git commit.
   - type: checkboxes
     attributes:
-      label: Checklist
-      description: Make sure you've checked (and actually did) all of the below.
+      label: Feature Request Checklist
+      description: Please check all of the following boxes that apply to your request.
+      options:
+        - label: I have read the documentation.
+        - label: I have searched for existing issues and confirmed this is not a duplicate.
+        - label: I am using the latest version of SnipStudio (or specify commit/release).
   - type: textarea
     attributes:
       label: Description
@@ -27,9 +29,11 @@ body:
       required: true
   - type: textarea
     attributes:
-      label: Solution
+      label: Proposed Solution
       description: Clear and concise description of what you think should happen.
+    validations:
+      required: true
   - type: textarea
     attributes:
-      label: Alternatives
-      description: Any considered alternative solutions or workarounds. If undesirable, why?
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds you've considered. If undesirable, explain why.
