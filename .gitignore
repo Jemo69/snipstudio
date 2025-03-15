@@ -1,0 +1,8 @@
+# ingore ables 
+.venv/
+build/
+__pycache__
+dist
+storage
+# push
+!snipstudio.py
