@@ -1,0 +1,104 @@
+name: Build and Release SnipStudio
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags (e.g., v1.0.0)
+
+jobs:
+  build_executables:
+    name: Build executables on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: windows-latest
+            output_name: snipstudio.exe
+            artifact_name: snipstudio-windows
+          - os: ubuntu-latest
+            output_name: snipstudio
+            artifact_name: snipstudio-linux
+          - os: macos-latest
+            output_name: snipstudio
+            artifact_name: snipstudio-macos
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+
+      - name: Build executable with PyInstaller
+        run: |
+          pyinstaller --onefile --name ${{ matrix.output_name }} snipstudio.py
+
+      - name: Upload executable as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: dist/${{ matrix.output_name }}
+          retention-days: 7
+
+  create_release:
+    name: Create GitHub Release
+    needs: build_executables
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: release_files
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          name: SnipStudio ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          files: |
+            release_files/snipstudio-windows/snipstudio.exe
+            release_files/snipstudio-linux/snipstudio
+            release_files/snipstudio-macos/snipstudio
+          body: |
+            ## SnipStudio ${{ steps.get_version.outputs.VERSION }}
+            
+            ### Downloads
+            
+            - [Windows Executable](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/snipstudio.exe)
+            - [Linux Executable](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/snipstudio)
+            - [macOS Executable](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/snipstudio)
+            
+            ### Installation
+            
+            #### Windows
+            Download and run the executable file.
+            
+            #### Linux
+            ```
+            chmod +x ./snipstudio
+            ./snipstudio
+            ```
+            
+            #### macOS
+            ```
+            chmod +x ./snipstudio
+            ./snipstudio
+            ```
+            
+            Built with Python 3.12
