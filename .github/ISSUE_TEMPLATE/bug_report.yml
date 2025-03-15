@@ -9,32 +9,23 @@ body:
       value: |
         *Please add an appropriate title for this issue.*
 
-        Before reporting, read the [documentation](https://github.com/TagStudioDev/TagStudio/blob/main/docs/index.md) and search existing [issues](https://github.com/TagStudioDev/TagStudio/issues).
+        Before reporting, read the [documentation](https://github.com/SnipStudioDev/TagStudio/blob/main/docs/index.md) and search existing [issues](https://github.com/TagStudioDev/TagStudio/issues).
         Validate that you are using an up-to-date version[^1], your issue might already be fixed!
-        Questions, guidance, and usage goes in [discussions](https://github.com/TagStudioDev/TagStudio/discussions). Invalid issues will be closed.
+        Questions, guidance, and usage goes in [discussions](https://github.com/SnipStudioDev/TagStudio/discussions). Invalid issues will be closed.
 
         [^1]: This can mean latest release, pre-release, or git commit.
   - type: checkboxes
     attributes:
       label: Checklist
-      description: Make sure you've checked (and actually did) all of the below.
-      options:
-        - label: I am using an up-to-date version.
-          required: true
-        - label: I have read the [documentation](https://github.com/TagStudioDev/TagStudio/blob/main/docs/index.md).
-          required: true
-        - label: I have searched existing [issues](https://github.com/TagStudioDev/TagStudio/issues).
-          required: true
+
   - type: input
     attributes:
-      label: TagStudio Version
-      placeholder: Alpha 9.1.0
+      label: Snip Version
     validations:
       required: true
   - type: input
     attributes:
       label: Operating System & Version
-      placeholder: TagOS 3.14
     validations:
       required: true
   - type: textarea
