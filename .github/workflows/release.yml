@@ -42,11 +42,14 @@ jobs:
           name: ${{ matrix.artifact_name }}
           path: dist/${{ matrix.output_name }}
           retention-days: 7
-  create_release:
-    name: Create GitHub Release
+
+  create_tag_release:
+    name: Create GitHub Release from Tag
     needs: build_executables
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v3
       - name: Download all artifacts
@@ -76,6 +79,70 @@ jobs:
             - [Windows Executable](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/snipstudio.exe)
             - [Linux Executable](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/snipstudio)
             - [macOS Executable](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/snipstudio)
+            
+            ### Installation
+            
+            #### Windows
+            Download and run the executable file.
+            
+            #### Linux
+            ```
+            chmod +x ./snipstudio
+            ./snipstudio
+            ```
+            
+            #### macOS
+            ```
+            chmod +x ./snipstudio
+            ./snipstudio
+            ```
+            
+            Built with Python 3.12
+            
+  create_branch_release:
+    name: Create GitHub Release from Branch
+    needs: build_executables
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release_files
+      - name: Generate version from date
+        id: gen_version
+        run: echo "VERSION=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_OUTPUT
+      - name: Create Release Tag
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "v${{ steps.gen_version.outputs.VERSION }}" -m "Automatic build v${{ steps.gen_version.outputs.VERSION }}"
+          git push origin "v${{ steps.gen_version.outputs.VERSION }}"
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "v${{ steps.gen_version.outputs.VERSION }}"
+          name: "SnipStudio ${{ steps.gen_version.outputs.VERSION }}"
+          draft: false
+          prerelease: true
+          files: |
+            release_files/snipstudio-windows/snipstudio.exe
+            release_files/snipstudio-linux/snipstudio
+            release_files/snipstudio-macos/snipstudio
+          body: |
+            ## SnipStudio ${{ steps.gen_version.outputs.VERSION }}
+            
+            Automated build from ${{ github.ref_name }} branch.
+            
+            ### Downloads
+            
+            - [Windows Executable](https://github.com/${{ github.repository }}/releases/download/v${{ steps.gen_version.outputs.VERSION }}/snipstudio.exe)
+            - [Linux Executable](https://github.com/${{ github.repository }}/releases/download/v${{ steps.gen_version.outputs.VERSION }}/snipstudio)
+            - [macOS Executable](https://github.com/${{ github.repository }}/releases/download/v${{ steps.gen_version.outputs.VERSION }}/snipstudio)
             
             ### Installation
             
