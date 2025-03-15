@@ -6,3 +6,4 @@ dist
 storage
 # push
 !snipstudio.py
+main.py
