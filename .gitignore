@@ -5,4 +5,6 @@ build/
 storage/
 __pycache__/
 #don't ingore this file 
+
 !./snipstudio.py
+*.py
