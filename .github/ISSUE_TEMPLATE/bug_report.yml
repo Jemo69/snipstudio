@@ -7,31 +7,33 @@ body:
   - type: markdown
     attributes:
       value: |
-        *Please add an appropriate title for this issue.*
-
-        Before reporting, read the [documentation](https://github.com/SnipStudioDev/TagStudio/blob/main/docs/index.md) and search existing [issues](https://github.com/TagStudioDev/TagStudio/issues).
-        Validate that you are using an up-to-date version[^1], your issue might already be fixed!
-        Questions, guidance, and usage goes in [discussions](https://github.com/SnipStudioDev/TagStudio/discussions). Invalid issues will be closed.
-
-        [^1]: This can mean latest release, pre-release, or git commit.
+        This can mean latest release, pre-release, or git commit.
   - type: checkboxes
     attributes:
-      label: Checklist
+      label: Bug Report Checklist
+      description: Please check all of the following boxes that apply to your issue.
+      options:
+        - label: I have read the documentation.
+        - label: I have searched for existing issues and confirmed this is not a duplicate.
+        - label: I am using the latest version of SnipStudio (or specify commit/release).
+        - label: I can consistently reproduce this issue.
 
   - type: input
     attributes:
       label: Snip Version
+      description: What version of SnipStudio are you using? (e.g., v1.0.0, commit hash)
     validations:
       required: true
   - type: input
     attributes:
       label: Operating System & Version
+      description: What operating system and version are you running SnipStudio on? (e.g., Windows 10, macOS 13.4, Ubuntu 22.04)
     validations:
       required: true
   - type: textarea
     attributes:
       label: Description
-      description: Clear and concise description of the problem. Attach screenshots if needed, and include any errors you see.
+      description: Clear and concise description of the problem. Attach screenshots if needed, and include any error messages you see.
     validations:
       required: true
   - type: textarea
@@ -53,4 +55,4 @@ body:
   - type: textarea
     attributes:
       label: Logs
-      description: Provide any logs, if applicable.
+      description: Please provide any relevant logs that could help diagnose the issue. This could include error logs, console output, or crash reports.
