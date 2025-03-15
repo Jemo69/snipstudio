@@ -7,7 +7,7 @@ import pyperclip
 class CodeStorageApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Code Storage")
+        self.root.title("SnipStudio")
         self.root.geometry("1400x700")
 
         # Catppuccin theme colors
