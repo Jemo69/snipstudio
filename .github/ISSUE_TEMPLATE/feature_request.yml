@@ -6,6 +6,7 @@ labels: ['Type: Enhancement']
 body:
   - type: markdown
     attributes:
+    label : What is the new idea 
       value: |
         *Please add an appropriate title for this feature request.*
 
