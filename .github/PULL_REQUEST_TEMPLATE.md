@@ -8,5 +8,5 @@
 - [ ] Linux x86
 - [ ]  Linux ARM
 -Tested For:
-- B asic functionality
+- Basic functionality
 PyInstaller executable
