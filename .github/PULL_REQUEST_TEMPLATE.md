@@ -1,5 +1,5 @@
--# Summary
-- Tasks Completed
+- # Summary
+- ## Tasks Completed
 - Platforms Tested:
 - [ ] Windows x86
 - [ ] Windows ARM
