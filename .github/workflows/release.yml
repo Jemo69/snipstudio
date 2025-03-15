@@ -130,8 +130,17 @@ jobs:
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
-          git tag -a "v${{ steps.gen_version.outputs.VERSION }}" -m "Automatic build v${{ steps.gen_version.outputs.VERSION }}"
-          git push origin "v${{ steps.gen_version.outputs.VERSION }}"
+          # Check if tag already exists
+          if ! git rev-parse "v${{ steps.gen_version.outputs.VERSION }}" >/dev/null 2>&1; then
+            git tag -a "v${{ steps.gen_version.outputs.VERSION }}" -m "Automatic build v${{ steps.gen_version.outputs.VERSION }}"
+            git push origin "v${{ steps.gen_version.outputs.VERSION }}"
+          else
+            # If tag exists, add a timestamp to make it unique
+            UNIQUE_VERSION="${{ steps.gen_version.outputs.VERSION }}.$(date +'%H%M%S')"
+            echo "VERSION=$UNIQUE_VERSION" >> $GITHUB_OUTPUT
+            git tag -a "v$UNIQUE_VERSION" -m "Automatic build v$UNIQUE_VERSION"
+            git push origin "v$UNIQUE_VERSION"
+          fi
           
       - name: Create Release
         id: create_release
