@@ -49,68 +49,6 @@ jobs:
           path: dist/${{ matrix.output_name }}
           retention-days: 7
 
-  create_tag_release:
-    name: Create GitHub Release from Tag
-    needs: build_executables
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: release_files
-          
-      - name: Get version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-      
-      - name: Prepare release files with unique names
-        run: |
-          mkdir -p prepared_files
-          cp release_files/snipstudio-windows/snipstudio.exe prepared_files/snipstudio-windows.exe
-          cp release_files/snipstudio-linux/snipstudio prepared_files/snipstudio-linux
-          cp release_files/snipstudio-macos/snipstudio prepared_files/snipstudio-macos
-          
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref }}
-          name: SnipStudio ${{ steps.get_version.outputs.VERSION }}
-          draft: false
-          prerelease: false
-          files: |
-            prepared_files/snipstudio-windows.exe
-            prepared_files/snipstudio-linux
-            prepared_files/snipstudio-macos
-          body: |
-            ## SnipStudio ${{ steps.get_version.outputs.VERSION }}
-            
-            ### Downloads
-            
-            - [Windows Executable](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/snipstudio-windows.exe)
-            - [Linux Executable](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/snipstudio-linux)
-            - [macOS Executable](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/snipstudio-macos)
-            
-            ### Installation
-            
-            #### Windows
-            Download and run the executable file.
-            
-            #### Linux/macOS
-            ```
-            chmod +x ./snipstudio-linux  # or ./snipstudio-macos
-            ./snipstudio-linux  # or ./snipstudio-macos
-            ```
-            
-            Built with Python 3.12
-
   create_branch_release:
     name: Create GitHub Release from Branch
     needs: build_executables
