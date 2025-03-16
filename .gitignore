@@ -7,3 +7,5 @@ storage
 # push
 !snipstudio.py
 main.py
+code_snippets.db
+git.sh

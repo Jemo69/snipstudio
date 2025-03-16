@@ -10,11 +10,11 @@ class CodeStorageApp:
         self.root.title("SnipStudio")
         self.root.geometry("1400x700")
 
-        # Catppuccin theme colors
-        self.colors = {
-            "base": "#1e1e2e",  # Dark background
-            "surface0": "#313244",  # Slightly lighter background
-            "surface1": "#45475a",  # Even lighter background for contrast
+        # Catppuccin theme
+        self.catppuccin = {
+            "base": "#1e1e2e",  # Dark base
+            "surface0": "#313244",  # Slightly lighter base
+            "surface1": "#45475a",  # Even lighter base for contrast
             "text": "#cdd6f4",  # Main text color
             "subtext0": "#a6adc8",  # Secondary text color
             "blue": "#89b4fa",  # Highlight color
@@ -24,6 +24,89 @@ class CodeStorageApp:
             "red": "#f38ba8",  # Error/Delete color
             "green": "#a6e3a1",  # Success color
         }
+
+        self.dracula_colors = {
+            "base": "#282a36",
+            "surface0": "#44475a",
+            "surface1": "#6272a4",
+            "text": "#f8f8f2",
+            "subtext0": "#6272a4",
+            "foreground": "#f8f8f2",
+            "comment": "#6272a4",
+            "selection": "#44475a",
+            "currentLine": "#44475a",
+            "cyan": "#8be9fd",
+            "green": "#50fa7b",
+            "orange": "#ffb86c",
+            "pink": "#ff79c6",
+            "purple": "#bd93f9",
+            "red": "#ff5555",
+            "yellow": "#f1fa8c",
+        }
+
+        self.one_dark_pro_colors = {
+            "base": "#282c34",
+            "surface0": "#3a3f4b",
+            "surface1": "#5c6370",
+            "text": "#abb2bf",
+            "subtext0": "#5c6370",
+            "foreground": "#abb2bf",
+            "comment": "#5c6370",
+            "selection": "#3e4451",
+            "string": "#98c379",
+            "number": "#d19a66",
+            "boolean": "#c678dd",
+            "keyword": "#c678dd",
+            "function": "#61afef",
+            "class": "#e5c07b",
+            "parameter": "#abb2bf",
+            "operator": "#abb2bf",
+            "punctuation": "#abb2bf",
+            "variable": "#e06c75",
+        }
+
+        self.tokyo_night_storm = {
+            "base": "#24283b",
+            "surface0": "#2f3549",
+            "surface1": "#414868",
+            "text": "#c0caf5",
+            "subtext0": "#565f89",
+            "foreground": "#c8d3f5",
+            "comment": "#565f89",
+            "selection": "#3b4261",
+            "string": "#9ece6a",
+            "number": "#ff9e64",
+            "boolean": "#c6a0f6",
+            "keyword": "#bb9af7",
+            "function": "#7aa2f7",
+            "class": "#e0af68",
+            "parameter": "#c8d3f5",
+            "operator": "#c8d3f5",
+            "punctuation": "#c8d3f5",
+            "variable": "#f7768e",
+        }
+
+        self.night_owl_colors = {
+            "base": "#011627",
+            "surface0": "#112630",
+            "surface1": "#2d3f44",
+            "text": "#d6deeb",
+            "subtext0": "#637777",
+            "foreground": "#d6deeb",
+            "comment": "#637777",
+            "selection": "#1d3b53",
+            "string": "#addb67",
+            "text": "#f78c6c",
+            "boolean": "#c792ea",
+            "keyword": "#c792ea",
+            "function": "#82aaff",
+            "class": "#ffcb8b",
+            "parameter": "#d6deeb",
+            "operator": "#c792ea",
+            "punctuation": "#d6deeb",
+            "variable": "#f07178",
+        }
+
 
         # Apply theme
         self.configure_theme()
@@ -39,7 +122,7 @@ class CodeStorageApp:
 
     def configure_theme(self):
         # Configure the main window
-        self.root.configure(bg=self.colors["base"])
+        self.root.configure(bg=self.catppuccin["base"])
 
         # Create a custom theme
         style = ttk.Style()
@@ -47,51 +130,101 @@ class CodeStorageApp:
             "catppuccin",
             parent="alt",
             settings={
-                "TFrame": {"configure": {"background": self.colors["base"]}},
+                "TFrame": {"configure": {"background": self.catppuccin["base"]}},
                 "TLabel": {
                     "configure": {
-                        "background": self.colors["base"],
-                        "foreground": self.colors["text"],
+                        "background": self.catppuccin["base"],
+                        "foreground": self.catppuccin["text"],
                     }
                 },
                 "TButton": {
                     "configure": {
-                        "background": self.colors["surface1"],
-                        "foreground": self.colors["text"],
+                        "background": self.catppuccin["surface1"],
+                        "foreground": self.catppuccin["text"],
                         "padding": 6,
                         "relief": "flat",
                     },
                     "map": {
-                        "background": [("active", self.colors["lavender"])],
-                        "foreground": [("active", self.colors["base"])],
+                        "background": [("active", self.catppuccin["lavender"])],
+                        "foreground": [("active", self.catppuccin["base"])],
                     },
                 },
                 "TEntry": {
                     "configure": {
-                        "foreground": self.colors["text"],
-                        "fieldbackground": self.colors["surface0"],
-                        "insertcolor": self.colors["text"],
+                        "foreground": self.catppuccin["text"],
+                        "fieldbackground": self.catppuccin["surface0"],
+                        "insertcolor": self.catppuccin["text"],
                         "borderwidth": 1,
                         "relief": "solid",
                     }
                 },
                 "TCombobox": {
                     "configure": {
-                        "foreground": self.colors["text"],
-                        "fieldbackground": self.colors["surface0"],
-                        "selectbackground": self.colors["blue"],
-                        "selectforeground": self.colors["base"],
+                        "foreground": self.catppuccin["text"],
+                        "fieldbackground": self.catppuccin["surface0"],
+                        "selectbackground": self.catppuccin["blue"],
+                        "selectforeground": self.catppuccin["base"],
                     }
                 },
             },
         )
-        style.theme_use("catppuccin")
+        # Theme selection
+        self.current_theme = 'catppuccin'  # Default theme
+        self.themes = {
+            'catppuccin': self.catppuccin,
+            'dracula': self.dracula_colors,
+            'one_dark': self.one_dark_pro_colors,
+            'tokyo_night': self.tokyo_night_storm,
+            'night_owl': self.night_owl_colors
+        }
+        
+        style.theme_use(self.current_theme)
 
-        # Configure combobox dropdown style
-        self.root.option_add("*TCombobox*Listbox.background", self.colors["surface0"])
-        self.root.option_add("*TCombobox*Listbox.foreground", self.colors["text"])
-        self.root.option_add("*TCombobox*Listbox.selectBackground", self.colors["blue"])
-        self.root.option_add("*TCombobox*Listbox.selectForeground", self.colors["base"])
+        # Configure combobox dropdown style based on current theme
+        theme_colors = self.themes[self.current_theme]
+        self.root.option_add("*TCombobox*Listbox.background", theme_colors["surface0"])
+        self.root.option_add("*TCombobox*Listbox.foreground", theme_colors["text"])
+        self.root.option_add("*TCombobox*Listbox.selectBackground", theme_colors["blue"])
+        self.root.option_add("*TCombobox*Listbox.selectForeground", theme_colors["base"])
+
+    def switch_theme(self, theme_name):
+        if theme_name in self.themes:
+            self.current_theme = theme_name
+            theme_colors = self.themes[theme_name]
+            
+            # Update the UI with the new theme
+            self.root.configure(bg=theme_colors["base"])
+            
+            # Update combobox styles
+            self.root.option_add("*TCombobox*Listbox.background", theme_colors["surface0"])
+            self.root.option_add("*TCombobox*Listbox.foreground", theme_colors["text"])
+            self.root.option_add("*TCombobox*Listbox.selectBackground", theme_colors["blue"] if "blue" in theme_colors else theme_colors["selection"])
+            self.root.option_add("*TCombobox*Listbox.selectForeground", theme_colors["base"])
+            
+            # Refresh widgets to apply new theme
+            self.refresh_ui_with_theme()
+
+    def refresh_ui_with_theme(self):
+        # This method would update all widgets with the current theme
+        # For a complete implementation, you would need to recreate or update all widgets
+        theme_colors = self.themes[self.current_theme]
+        
+        # Update listbox colors
+        self.listbox.config(
+            bg=theme_colors["surface0"],
+            fg=theme_colors["text"],
+            selectbackground=theme_colors["blue"] if "blue" in theme_colors else theme_colors["selection"],
+            selectforeground=theme_colors["base"]
+        )
+        
+        # Update code editor colors
+        self.code_editor.config(
+            bg=theme_colors["surface0"],
+            fg=theme_colors["text"],
+            insertbackground=theme_colors["text"],
+            selectbackground=theme_colors["blue"] if "blue" in theme_colors else theme_colors["selection"],
+            selectforeground=theme_colors["base"]
+        )
 
     def create_table(self):
         cursor = self.conn.cursor()
@@ -113,6 +246,15 @@ class CodeStorageApp:
         search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
         search_entry.bind("<KeyRelease>", self.search_snippets)
 
+        # Theme selection
+        theme_frame = ttk.Frame(search_frame)
+        theme_frame.pack(side=tk.RIGHT, padx=5)
+        ttk.Label(theme_frame, text="Theme:").pack(side=tk.LEFT, padx=(0, 5))
+        self.theme_var = tk.StringVar(value=self.current_theme)
+        theme_combo = ttk.Combobox(theme_frame, textvariable=self.theme_var, values=list(self.themes.keys()), width=10)
+        theme_combo.pack(side=tk.LEFT)
+        theme_combo.bind("<<ComboboxSelected>>", lambda e: self.switch_theme(self.theme_var.get()))
+
         # Main Content Frame
         main_frame = ttk.Frame(self.root)
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=20)
@@ -123,13 +265,14 @@ class CodeStorageApp:
 
         ttk.Label(listbox_frame, text="Snippets").pack(anchor=tk.W, pady=(0, 5))
 
+        theme_colors = self.themes[self.current_theme]
         self.listbox = tk.Listbox(
             listbox_frame,
             width=25,
-            bg=self.colors["surface0"],
-            fg=self.colors["text"],
-            selectbackground=self.colors["blue"],
-            selectforeground=self.colors["base"],
+            bg=theme_colors["surface0"],
+            fg=theme_colors["text"],
+            selectbackground=theme_colors["blue"],
+            selectforeground=theme_colors["base"],
             borderwidth=1,
             highlightthickness=0,
         )
@@ -172,11 +315,11 @@ class CodeStorageApp:
         self.code_editor = scrolledtext.ScrolledText(
             details_frame,
             wrap=tk.WORD,
-            bg=self.colors["surface0"],
-            fg=self.colors["text"],
-            insertbackground=self.colors["text"],
-            selectbackground=self.colors["blue"],
-            selectforeground=self.colors["base"],
+            bg=theme_colors["surface0"],
+            fg=theme_colors["text"],
+            insertbackground=theme_colors["text"],
+            selectbackground=theme_colors["blue"],
+            selectforeground=theme_colors["base"],
             font=("Consolas", 10),
         )
         self.code_editor.pack(fill=tk.BOTH, expand=True, pady=(5, 20))
