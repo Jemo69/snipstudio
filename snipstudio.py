@@ -2,14 +2,14 @@ import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 import sqlite3
 import pyperclip
+import os
 
 
 class CodeStorageApp:
     def __init__(self, root):
         self.root = root
         self.root.title("SnipStudio")
-        self.root.geometry("1400x700")
-
+        
         # Catppuccin theme
         self.catppuccin = {
             "base": "#1e1e2e",  # Dark base
@@ -24,6 +24,39 @@ class CodeStorageApp:
             "red": "#f38ba8",  # Error/Delete color
             "green": "#a6e3a1",  # Success color
         }
+        
+        # Set application icon
+        try:
+            # Try to set the window icon
+            self.root.iconphoto(True, tk.PhotoImage(file="snipstudio.jpg"))
+        except Exception as e:
+            # Silently fail if icon is not found
+            print(f"Icon not found: {e}")
+            
+        # Set application title with logo
+        title_frame = tk.Frame(root, bg=self.catppuccin["base"])
+        title_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        try:
+            # Load and display logo image
+            self.logo_img = tk.PhotoImage(file="snipstudio.jpg")
+            self.logo_img = self.logo_img.subsample(30, 30)  # Resize image if needed
+            logo_label = tk.Label(title_frame, image=self.logo_img, bg=self.catppuccin["base"])
+            logo_label.pack(side=tk.LEFT, padx=(0, 10))
+        except Exception as e:
+            # If logo image fails to load, print error but continue
+            print(f"Logo image not found: {e}")
+            
+        # Add title text next to logo
+        title_label = tk.Label(
+            title_frame, 
+            text="SnipStudio", 
+            font=("Helvetica", 16, "bold"),
+            fg=self.catppuccin["lavender"],
+            bg=self.catppuccin["base"]
+        )
+        title_label.pack(side=tk.LEFT)
+        self.root.geometry("1400x700")
 
         self.dracula_colors = {
             "base": "#282a36",
@@ -114,11 +147,77 @@ class CodeStorageApp:
         # Database setup
         self.conn = sqlite3.connect("code_snippets.db")
         self.create_table()
+        self.create_settings_table()
 
         # GUI Components
         self.create_widgets()
         self.populate_listbox()
         self.populate_categories()
+        
+        # Load last used snippet if available
+        self.load_last_used_snippet()
+        
+        # Register window close event
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def create_settings_table(self):
+        cursor = self.conn.cursor()
+        cursor.execute("""CREATE TABLE IF NOT EXISTS settings
+                          (key TEXT PRIMARY KEY,
+                           value TEXT)""")
+        self.conn.commit()
+
+    def save_last_used_snippet(self, snippet_id):
+        if snippet_id:
+            cursor = self.conn.cursor()
+            cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+                          ("last_used_snippet", str(snippet_id)))
+            self.conn.commit()
+
+    def load_last_used_snippet(self):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT value FROM settings WHERE key=?", ("last_used_snippet",))
+        result = cursor.fetchone()
+        
+        if result:
+            last_snippet_id = result[0]
+            cursor.execute("SELECT title FROM snippets WHERE id=?", (last_snippet_id,))
+            title_result = cursor.fetchone()
+            
+            if title_result:
+                title = title_result[0]
+                # Find the index of the title in the listbox
+                for i in range(self.listbox.size()):
+                    if self.listbox.get(i) == title:
+                        self.listbox.selection_set(i)
+                        self.listbox.see(i)
+                        self.show_snippet_by_id(last_snippet_id)
+                        break
+
+    def show_snippet_by_id(self, snippet_id):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT * FROM snippets WHERE id=?", (snippet_id,))
+        row = cursor.fetchone()
+        cursor.close()
+        
+        if row:
+            self.title_var.set(row[1])
+            self.category_var.set(row[2] if row[2] else "")
+            self.code_editor.delete("1.0", tk.END)
+            self.code_editor.insert("1.0", row[3])
+
+    def on_closing(self):
+        # Save the currently selected snippet as the last used
+        snippet_id = self.current_snippet_id()
+        if snippet_id:
+            self.save_last_used_snippet(snippet_id)
+        
+        # Close the database connection
+        if hasattr(self, "conn"):
+            self.conn.close()
+        
+        # Close the application
+        self.root.destroy()
 
     def configure_theme(self):
         # Configure the main window
@@ -393,6 +492,10 @@ class CodeStorageApp:
                            VALUES (?, ?, ?)""",
                 (title, category, code),
             )
+            # Get the ID of the newly inserted snippet
+            cursor.execute("SELECT last_insert_rowid()")
+            new_id = cursor.fetchone()[0]
+            self.save_last_used_snippet(new_id)
             message = "Snippet saved successfully"
 
         self.conn.commit()
@@ -434,6 +537,8 @@ class CodeStorageApp:
             self.category_var.set(row[2] if row[2] else "")
             self.code_editor.delete("1.0", tk.END)
             self.code_editor.insert("1.0", row[3])
+            # Save this as the last used snippet
+            self.save_last_used_snippet(row[0])
 
     def current_snippet_id(self):
         selection = self.listbox.curselection()
