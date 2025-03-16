@@ -40,7 +40,7 @@ jobs:
           
       - name: Build executable with PyInstaller
         run: |
-          pyinstaller --onefile --name ${{ matrix.output_name }} --icon=snipstudio.jpg snipstudio.py
+          pyinstaller --onefile --name ${{ matrix.output_name }} --icon=snipstudio.ico snipstudio.py
           
       - name: Upload executable as artifact
         uses: actions/upload-artifact@v4
