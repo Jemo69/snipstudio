@@ -15,13 +15,6 @@ body:
         [^1]: This can mean latest release, pre-release, or git commit.
   - type: checkboxes
     attributes:
-      label: Bug Report Checklist
-      description: Please check all of the following boxes that apply to your issue.
-      options:
-        - label: I have read the documentation.
-        - label: I have searched for existing issues and confirmed this is not a duplicate.
-        - label: I am using the latest version of SnipStudio (or specify commit/release).
-        - label: I can consistently reproduce this issue.
 
   - type: input
     attributes:

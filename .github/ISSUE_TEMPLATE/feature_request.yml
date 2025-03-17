@@ -15,12 +15,6 @@ body:
         [^1]: This can mean latest release, pre-release, or git commit.
   - type: checkboxes
     attributes:
-      label: Feature Request Checklist
-      description: Please check all of the following boxes that apply to your request.
-      options:
-        - label: I have read the documentation.
-        - label: I have searched for existing issues and confirmed this is not a duplicate.
-        - label: I am using the latest version of SnipStudio (or specify commit/release).
   - type: textarea
     attributes:
       label: Description
