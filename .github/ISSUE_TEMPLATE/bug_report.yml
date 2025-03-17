@@ -11,11 +11,20 @@ body:
 
         Before reporting, read the documentation and search existing issues to avoid duplicates.
         Validate that you are using an up-to-date version[^1], as your issue might already be fixed!
-        
+
         [^1]: This can mean latest release, pre-release, or git commit.
   - type: checkboxes
     attributes:
-
+      label: Reproducibility
+      description: How often does this bug occur?
+      options:
+        - label: Always
+        - label: Sometimes
+        - label: Rarely
+        - label: Not reproducible
+        - label: I don't know
+    validations:
+      required: true
   - type: input
     attributes:
       label: SnipStudio Version
