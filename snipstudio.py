@@ -159,6 +159,9 @@ class CodeStorageApp:
         # Register window close event
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+        # Add Ctrl+S binding for saving
+        self.root.bind('<Control-s>', lambda event: self.save_snippet())
+
     def create_settings_table(self):
         cursor = self.conn.cursor()
         cursor.execute("""CREATE TABLE IF NOT EXISTS settings
@@ -333,6 +336,10 @@ class CodeStorageApp:
                            code TEXT NOT NULL)""")
         self.conn.commit()
 
+    def focus_input(self, widget):
+        widget.focus_set()
+
+
     def create_widgets(self):
         # Search Frame
         search_frame = ttk.Frame(self.root)
@@ -343,6 +350,7 @@ class CodeStorageApp:
         search_entry = ttk.Entry(search_frame, textvariable=self.search_var)
         search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
         search_entry.bind("<KeyRelease>", self.search_snippets)
+        self.root.bind('<Control-k>', lambda event: self.focus_input(search_entry))
 
         # Theme selection
         theme_frame = ttk.Frame(search_frame)
@@ -438,6 +446,7 @@ class CodeStorageApp:
         delete_btn.pack(side=tk.LEFT, padx=5)
         copy_btn = ttk.Button(button_frame, text="Copy", command=self.copy_snippet)
         copy_btn.pack(side=tk.LEFT, padx=5)
+    
 
     def populate_listbox(self, search_query=None):
         self.listbox.delete(0, tk.END)
