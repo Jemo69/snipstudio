@@ -15,7 +15,7 @@ class CodeStorageApp:
             "base": "#1e1e2e",  # Dark base
             "surface0": "#313244",  # Slightly lighter base
             "surface1": "#45475a",  # Even lighter base for contrast
-            "text": "#cdd6f4",  # Main text color
+            "text": "#89dceb",  # Main text color
             "subtext0": "#a6adc8",  # Secondary text color
             "blue": "#89b4fa",  # Highlight color
             "lavender": "#b4befe",  # Secondary highlight
@@ -52,7 +52,7 @@ class CodeStorageApp:
             title_frame, 
             text="SnipStudio", 
             font=("Helvetica", 16, "bold"),
-            fg=self.catppuccin["lavender"],
+            fg=self.catppuccin["blue"],
             bg=self.catppuccin["base"]
         )
         title_label.pack(side=tk.LEFT)
@@ -123,7 +123,6 @@ class CodeStorageApp:
             "base": "#011627",
             "surface0": "#112630",
             "surface1": "#2d3f44",
-            "text": "#d6deeb",
             "subtext0": "#637777",
             "foreground": "#d6deeb",
             "comment": "#637777",
