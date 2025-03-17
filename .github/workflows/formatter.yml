@@ -29,5 +29,5 @@ jobs:
             git config --local user.name "Jemo69"
             git add .
             git commit -m "Apply ruff formatting"
-            git push origin
+            git push -f origin main
           fi
