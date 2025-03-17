@@ -351,6 +351,8 @@ class CodeStorageApp:
         search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
         search_entry.bind("<KeyRelease>", self.search_snippets)
         self.root.bind('<Control-k>', lambda event: self.focus_input(search_entry))
+        self.root.bind('<Command-k>', lambda event: self.focus_input(search_entry))
+
 
         # Theme selection
         theme_frame = ttk.Frame(search_frame)
