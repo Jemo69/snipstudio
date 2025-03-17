@@ -30,26 +30,26 @@ jobs:
             icon_param: ""
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Python 3.12
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
-          
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install pyinstaller pyperclip
-          
+
       - name: Install Pillow for macOS
         if: matrix.os == 'macos-latest'
         run: |
           python -m pip install pillow
-          
+
       - name: Build executable with PyInstaller
         run: |
           pyinstaller --onefile --noconsole --name ${{ matrix.output_name }} ${{ matrix.icon_param }} --add-data="snipstudio.jpg:." snipstudio.py
-          
+
       - name: Upload executable as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -69,16 +69,16 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: release_files
-          
+
       - name: Generate version from date
         id: gen_version
         run: echo "VERSION=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
-          
+
       - name: Create Release Tag
         run: |
           git config --global user.email "action@github.com"
@@ -94,14 +94,15 @@ jobs:
             git tag -a "v$UNIQUE_VERSION" -m "Automatic build v$UNIQUE_VERSION"
             git push origin "v$UNIQUE_VERSION"
           fi
-      
+
       - name: Prepare release files with unique names
         run: |
           mkdir -p prepared_files
           cp release_files/snipstudio-windows/snipstudio.exe prepared_files/snipstudio-windows.exe
           cp release_files/snipstudio-linux/snipstudio prepared_files/snipstudio-linux
           cp release_files/snipstudio-macos/snipstudio prepared_files/snipstudio-macos
-          
+          cp snipstudio.jpg prepared_files/snipstudio.jpg # Include the image in release files
+
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -115,20 +116,21 @@ jobs:
             prepared_files/snipstudio-windows.exe
             prepared_files/snipstudio-linux
             prepared_files/snipstudio-macos
+            prepared_files/snipstudio.jpg # Include the image in release assets
           body: |
             ## SnipStudio ${{ steps.gen_version.outputs.VERSION }}
-            
+
             Latest build from ${{ github.ref_name }} branch
-            
+
             ### Installation
-            
+
             #### Windows
             Download and run the executable file
-            
+
             #### Linux/macOS
             ```
             chmod +x ./snipstudio-linux  # or ./snipstudio-macos
             ./snipstudio-linux  # or ./snipstudio-macos
             ```
-            
+
             Built with Python 3.12 and includes pyperclip for clipboard functionality
