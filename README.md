@@ -12,10 +12,10 @@ SnipStudio is a simple and user-friendly application for storing and managing co
 - **User-friendly Interface:** Intuitive graphical interface built with Tkinter and a modern Catppuccin theme.
 - **Persistent Storage:** Snippets are stored in a local SQLite database for persistent access.
 
-## Installation
+## How to contribute 
 
 1. **Prerequisites:**
-    - Python 3.x installed on your system.
+    - Python 3.12 installed on your system.
     - No external libraries are required as Tkinter, sqlite3, and pyperclip are usually included with Python or easily installable via pip.
 
 2. **Download:**
@@ -69,6 +69,41 @@ SnipStudio is a simple and user-friendly application for storing and managing co
 7. **Copying Snippets:**
     - Select a snippet from the list.
     - Click the "Copy" button to copy the code to your clipboard.
+## How to install
+### Installation
+
+SnipStudio is distributed as executable files for Windows, Linux, and macOS. You can download the latest release from the [Releases page](https://github.com/your-github-username/snipstudio/releases).
+
+**Windows:**
+
+1. **Download:** Download the `snipstudio.exe` file from the Releases page.
+2. **Run:** Double-click `snipstudio.exe` to run the application.
+
+**Linux/macOS:**
+
+1. **Download:** Download the `snipstudio-linux` or `snipstudio-macos` file depending on your operating system from the Releases page.
+2. **Make Executable:** Open a terminal and navigate to the directory where you downloaded the file. Run the appropriate command to make the file executable:
+   ```bash
+   chmod +x ./snipstudio-linux  # For Linux
+   ```
+   or
+   ```bash
+   chmod +x ./snipstudio-macos  # For macOS
+   ```
+3. **Run:** Execute the application by running:
+   ```bash
+   ./snipstudio-linux  # For Linux
+   ```
+   or
+   ```bash
+   ./snipstudio-macos  # For macOS
+   ```
+
+**Note:**
+
+- SnipStudio is built with Python 3.12.
+- The release includes `pyperclip` for clipboard functionality, ensuring copy-paste operations work seamlessly.
+- Executable files are available in the release section of the GitHub repository.
 
 ## License
 
