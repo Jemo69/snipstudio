@@ -9,7 +9,7 @@ class CodeStorageApp:
     def __init__(self, root):
         self.root = root
         self.root.title("SnipStudio")
-        
+
         # Catppuccin theme
         self.catppuccin = {
             "base": "#1e1e2e",  # Dark base
@@ -24,7 +24,7 @@ class CodeStorageApp:
             "red": "#f38ba8",  # Error/Delete color
             "green": "#a6e3a1",  # Success color
         }
-        
+
         # Set application icon
         try:
             # Try to set the window icon
@@ -32,28 +32,30 @@ class CodeStorageApp:
         except Exception as e:
             # Silently fail if icon is not found
             print(f"Icon not found: {e}")
-            
+
         # Set application title with logo
         title_frame = tk.Frame(root, bg=self.catppuccin["base"])
         title_frame.pack(fill=tk.X, padx=10, pady=5)
-        
+
         try:
             # Load and display logo image
             self.logo_img = tk.PhotoImage(file="snipstudio.jpg")
             self.logo_img = self.logo_img.subsample(30, 30)  # Resize image if needed
-            logo_label = tk.Label(title_frame, image=self.logo_img, bg=self.catppuccin["base"])
+            logo_label = tk.Label(
+                title_frame, image=self.logo_img, bg=self.catppuccin["base"]
+            )
             logo_label.pack(side=tk.LEFT, padx=(0, 10))
         except Exception as e:
             # If logo image fails to load, print error but continue
             print(f"Logo image not found: {e}")
-            
+
         # Add title text next to logo
         title_label = tk.Label(
-            title_frame, 
-            text="SnipStudio", 
+            title_frame,
+            text="SnipStudio",
             font=("Helvetica", 16, "bold"),
             fg=self.catppuccin["blue"],
-            bg=self.catppuccin["base"]
+            bg=self.catppuccin["base"],
         )
         title_label.pack(side=tk.LEFT)
         self.root.geometry("1400x700")
@@ -139,7 +141,6 @@ class CodeStorageApp:
             "variable": "#f07178",
         }
 
-
         # Apply theme
         self.configure_theme()
 
@@ -152,15 +153,15 @@ class CodeStorageApp:
         self.create_widgets()
         self.populate_listbox()
         self.populate_categories()
-        
+
         # Load last used snippet if available
         self.load_last_used_snippet()
-        
+
         # Register window close event
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         # Add Ctrl+S binding for saving
-        self.root.bind('<Control-s>', lambda event: self.save_snippet())
+        self.root.bind("<Control-s>", lambda event: self.save_snippet())
 
     def create_settings_table(self):
         cursor = self.conn.cursor()
@@ -172,20 +173,22 @@ class CodeStorageApp:
     def save_last_used_snippet(self, snippet_id):
         if snippet_id:
             cursor = self.conn.cursor()
-            cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
-                          ("last_used_snippet", str(snippet_id)))
+            cursor.execute(
+                "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+                ("last_used_snippet", str(snippet_id)),
+            )
             self.conn.commit()
 
     def load_last_used_snippet(self):
         cursor = self.conn.cursor()
         cursor.execute("SELECT value FROM settings WHERE key=?", ("last_used_snippet",))
         result = cursor.fetchone()
-        
+
         if result:
             last_snippet_id = result[0]
             cursor.execute("SELECT title FROM snippets WHERE id=?", (last_snippet_id,))
             title_result = cursor.fetchone()
-            
+
             if title_result:
                 title = title_result[0]
                 # Find the index of the title in the listbox
@@ -201,7 +204,7 @@ class CodeStorageApp:
         cursor.execute("SELECT * FROM snippets WHERE id=?", (snippet_id,))
         row = cursor.fetchone()
         cursor.close()
-        
+
         if row:
             self.title_var.set(row[1])
             self.category_var.set(row[2] if row[2] else "")
@@ -213,11 +216,11 @@ class CodeStorageApp:
         snippet_id = self.current_snippet_id()
         if snippet_id:
             self.save_last_used_snippet(snippet_id)
-        
+
         # Close the database connection
         if hasattr(self, "conn"):
             self.conn.close()
-        
+
         # Close the application
         self.root.destroy()
 
@@ -270,38 +273,51 @@ class CodeStorageApp:
             },
         )
         # Theme selection
-        self.current_theme = 'catppuccin'  # Default theme
+        self.current_theme = "catppuccin"  # Default theme
         self.themes = {
-            'catppuccin': self.catppuccin,
-            'dracula': self.dracula_colors,
-            'one_dark': self.one_dark_pro_colors,
-            'tokyo_night': self.tokyo_night_storm,
-            'night_owl': self.night_owl_colors
+            "catppuccin": self.catppuccin,
+            "dracula": self.dracula_colors,
+            "one_dark": self.one_dark_pro_colors,
+            "tokyo_night": self.tokyo_night_storm,
+            "night_owl": self.night_owl_colors,
         }
-        
+
         style.theme_use(self.current_theme)
 
         # Configure combobox dropdown style based on current theme
         theme_colors = self.themes[self.current_theme]
         self.root.option_add("*TCombobox*Listbox.background", theme_colors["surface0"])
         self.root.option_add("*TCombobox*Listbox.foreground", theme_colors["text"])
-        self.root.option_add("*TCombobox*Listbox.selectBackground", theme_colors["blue"])
-        self.root.option_add("*TCombobox*Listbox.selectForeground", theme_colors["base"])
+        self.root.option_add(
+            "*TCombobox*Listbox.selectBackground", theme_colors["blue"]
+        )
+        self.root.option_add(
+            "*TCombobox*Listbox.selectForeground", theme_colors["base"]
+        )
 
     def switch_theme(self, theme_name):
         if theme_name in self.themes:
             self.current_theme = theme_name
             theme_colors = self.themes[theme_name]
-            
+
             # Update the UI with the new theme
             self.root.configure(bg=theme_colors["base"])
-            
+
             # Update combobox styles
-            self.root.option_add("*TCombobox*Listbox.background", theme_colors["surface0"])
+            self.root.option_add(
+                "*TCombobox*Listbox.background", theme_colors["surface0"]
+            )
             self.root.option_add("*TCombobox*Listbox.foreground", theme_colors["text"])
-            self.root.option_add("*TCombobox*Listbox.selectBackground", theme_colors["blue"] if "blue" in theme_colors else theme_colors["selection"])
-            self.root.option_add("*TCombobox*Listbox.selectForeground", theme_colors["base"])
-            
+            self.root.option_add(
+                "*TCombobox*Listbox.selectBackground",
+                theme_colors["blue"]
+                if "blue" in theme_colors
+                else theme_colors["selection"],
+            )
+            self.root.option_add(
+                "*TCombobox*Listbox.selectForeground", theme_colors["base"]
+            )
+
             # Refresh widgets to apply new theme
             self.refresh_ui_with_theme()
 
@@ -309,22 +325,26 @@ class CodeStorageApp:
         # This method would update all widgets with the current theme
         # For a complete implementation, you would need to recreate or update all widgets
         theme_colors = self.themes[self.current_theme]
-        
+
         # Update listbox colors
         self.listbox.config(
             bg=theme_colors["surface0"],
             fg=theme_colors["text"],
-            selectbackground=theme_colors["blue"] if "blue" in theme_colors else theme_colors["selection"],
-            selectforeground=theme_colors["base"]
+            selectbackground=theme_colors["blue"]
+            if "blue" in theme_colors
+            else theme_colors["selection"],
+            selectforeground=theme_colors["base"],
         )
-        
+
         # Update code editor colors
         self.code_editor.config(
             bg=theme_colors["surface0"],
             fg=theme_colors["text"],
             insertbackground=theme_colors["text"],
-            selectbackground=theme_colors["blue"] if "blue" in theme_colors else theme_colors["selection"],
-            selectforeground=theme_colors["base"]
+            selectbackground=theme_colors["blue"]
+            if "blue" in theme_colors
+            else theme_colors["selection"],
+            selectforeground=theme_colors["base"],
         )
 
     def create_table(self):
@@ -339,7 +359,6 @@ class CodeStorageApp:
     def focus_input(self, widget):
         widget.focus_set()
 
-
     def create_widgets(self):
         # Search Frame
         search_frame = ttk.Frame(self.root)
@@ -350,18 +369,24 @@ class CodeStorageApp:
         search_entry = ttk.Entry(search_frame, textvariable=self.search_var)
         search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
         search_entry.bind("<KeyRelease>", self.search_snippets)
-        self.root.bind('<Control-k>', lambda event: self.focus_input(search_entry))
-        self.root.bind('<Command-k>', lambda event: self.focus_input(search_entry))
-
+        self.root.bind("<Control-k>", lambda event: self.focus_input(search_entry))
+        self.root.bind("<Command-k>", lambda event: self.focus_input(search_entry))
 
         # Theme selection
         theme_frame = ttk.Frame(search_frame)
         theme_frame.pack(side=tk.RIGHT, padx=5)
         ttk.Label(theme_frame, text="Theme:").pack(side=tk.LEFT, padx=(0, 5))
         self.theme_var = tk.StringVar(value=self.current_theme)
-        theme_combo = ttk.Combobox(theme_frame, textvariable=self.theme_var, values=list(self.themes.keys()), width=10)
+        theme_combo = ttk.Combobox(
+            theme_frame,
+            textvariable=self.theme_var,
+            values=list(self.themes.keys()),
+            width=10,
+        )
         theme_combo.pack(side=tk.LEFT)
-        theme_combo.bind("<<ComboboxSelected>>", lambda e: self.switch_theme(self.theme_var.get()))
+        theme_combo.bind(
+            "<<ComboboxSelected>>", lambda e: self.switch_theme(self.theme_var.get())
+        )
 
         # Main Content Frame
         main_frame = ttk.Frame(self.root)
@@ -448,7 +473,6 @@ class CodeStorageApp:
         delete_btn.pack(side=tk.LEFT, padx=5)
         copy_btn = ttk.Button(button_frame, text="Copy", command=self.copy_snippet)
         copy_btn.pack(side=tk.LEFT, padx=5)
-    
 
     def populate_listbox(self, search_query=None):
         self.listbox.delete(0, tk.END)
@@ -475,7 +499,7 @@ class CodeStorageApp:
         cursor.close()
 
     def copy_snippet(self):
-        pyperclip.copy(self.code_editor.get('1.0',tk.END))
+        pyperclip.copy(self.code_editor.get("1.0", tk.END))
 
     def save_snippet(self):
         title = self.title_var.get().strip()
