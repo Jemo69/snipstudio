@@ -145,7 +145,7 @@ class CodeStorageApp:
                 "parameter": "#6c71c4",
                 "operator": "#839496",
                 "punctuation": "#93a1a1",
-            }
+            },
         }
 
         # Set default theme
@@ -289,9 +289,7 @@ class CodeStorageApp:
 
     def load_last_used_snippet(self):
         cursor = self.conn.cursor()
-        cursor.execute(
-            "SELECT value FROM settings WHERE key=?", ("last_used_snippet",)
-        )
+        cursor.execute("SELECT value FROM settings WHERE key=?", ("last_used_snippet",))
         result = cursor.fetchone()
 
         if result:
@@ -387,8 +385,12 @@ class CodeStorageApp:
 
         self.root.option_add("*TCombobox*Listbox.background", theme_colors["surface0"])
         self.root.option_add("*TCombobox*Listbox.foreground", theme_colors["text"])
-        self.root.option_add("*TCombobox*Listbox.selectBackground", theme_colors["accent_blue"])
-        self.root.option_add("*TCombobox*Listbox.selectForeground", theme_colors["base"])
+        self.root.option_add(
+            "*TCombobox*Listbox.selectBackground", theme_colors["accent_blue"]
+        )
+        self.root.option_add(
+            "*TCombobox*Listbox.selectForeground", theme_colors["base"]
+        )
 
     def switch_theme(self, theme_name):
         """Switches the application theme and updates all widgets."""
