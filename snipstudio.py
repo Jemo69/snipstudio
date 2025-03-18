@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox, scrolledtext
 import sqlite3
 import pyperclip
 import os
+import sys
 
 
 class CodeStorageApp:
@@ -28,7 +29,16 @@ class CodeStorageApp:
         # Set application icon
         try:
             # Try to set the window icon
-            self.root.iconphoto(True, tk.PhotoImage(file="snipstudio.jpg"))
+            if getattr(sys, 'frozen', False):
+                # If the application is run as a bundle, the PyInstaller bootloader
+                # extends the sys module by a flag frozen=True and sets the app
+                # path into variable _MEIPASS'.
+                application_path = sys._MEIPASS
+            else:
+                application_path = os.path.dirname(os.path.abspath(__file__))
+            icon_path = os.path.join(application_path, "snipstudio.ico")
+            self.root.iconbitmap(icon_path)
+
         except Exception as e:
             # Silently fail if icon is not found
             print(f"Icon not found: {e}")
@@ -39,7 +49,12 @@ class CodeStorageApp:
 
         try:
             # Load and display logo image
-            self.logo_img = tk.PhotoImage(file="snipstudio.jpg")
+            if getattr(sys, 'frozen', False):
+                application_path = sys._MEIPASS
+            else:
+                application_path = os.path.dirname(os.path.abspath(__file__))
+            logo_path = os.path.join(application_path, "snipstudio.jpg")
+            self.logo_img = tk.PhotoImage(file=logo_path)
             self.logo_img = self.logo_img.subsample(30, 30)  # Resize image if needed
             logo_label = tk.Label(
                 title_frame, image=self.logo_img, bg=self.catppuccin["base"]
@@ -295,7 +310,6 @@ class CodeStorageApp:
             self.code_editor.delete("1.0", tk.END)
             self.code_editor.insert("1.0", row[3])
 
-    # todo store last used theme
     def on_closing(self):
         # Save the currently selected snippet as the last used
         snippet_id = self.current_snippet_id()
@@ -303,9 +317,8 @@ class CodeStorageApp:
             self.save_last_used_snippet(snippet_id)
 
         # Save the currently selected theme
-        self.last_used_theme = self.save_last_used_theme(self.current_theme)
+        self.save_last_used_theme(self.current_theme)
 
-        self.current_theme = self.last_used_theme
         # Close the database connection
         if hasattr(self, "conn"):
             self.conn.close()
@@ -720,8 +733,10 @@ class CodeStorageApp:
             last_theme_name = result[0]
             self.current_theme = last_theme_name
             if last_theme_name in self.themes:
-                self.switch_theme(last_theme_name)
+                # self.switch_theme(last_theme_name)
+                self.theme_var.set(last_theme_name)
                 self.current_theme = last_theme_name
+
             else:
                 print(f"Theme '{last_theme_name}' not found, using default.")
         else:
