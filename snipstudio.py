@@ -11,229 +11,238 @@ class CodeStorageApp:
         self.root = root
         self.root.title("SnipStudio")
 
-        # Catppuccin theme
-        self.catppuccin = {
-            "base": "#1e1e2e",  # Dark base
-            "surface0": "#313244",  # Slightly lighter base
-            "surface1": "#45475a",  # Even lighter base for contrast
-            "text": "#89dceb",  # Main text color
-            "subtext0": "#a6adc8",  # Secondary text color
-            "blue": "#89b4fa",  # Highlight color
-            "lavender": "#b4befe",  # Secondary highlight
-            "mauve": "#cba6f7",  # Accent color
-            "peach": "#fab387",  # Warning color
-            "red": "#f38ba8",  # Error/Delete color
-            "green": "#a6e3a1",  # Success color
+        # Define themes
+        self.themes = {
+            "catppuccin": {
+                "base": "#1e1e2e",
+                "surface0": "#313244",
+                "surface1": "#45475a",
+                "text": "#89dceb",
+                "subtext0": "#a6adc8",
+                "accent_blue": "#89b4fa",
+                "accent_purple": "#b4befe",
+                "accent_mauve": "#cba6f7",
+                "accent_orange": "#fab387",
+                "accent_red": "#f38ba8",
+                "accent_green": "#a6e3a1",
+            },
+            "dracula": {
+                "base": "#282a36",
+                "surface0": "#44475a",
+                "surface1": "#6272a4",
+                "text": "#f8f8f2",
+                "subtext0": "#6272a4",
+                "foreground": "#f8f8f2",
+                "comment": "#6272a4",
+                "selection": "#44475a",
+                "currentLine": "#44475a",
+                "accent_cyan": "#8be9fd",
+                "accent_green": "#50fa7b",
+                "accent_orange": "#ffb86c",
+                "accent_pink": "#ff79c6",
+                "accent_purple": "#bd93f9",
+                "accent_red": "#ff5555",
+                "accent_yellow": "#f1fa8c",
+            },
+            "one_dark": {
+                "base": "#282c34",
+                "surface0": "#3a3f4b",
+                "surface1": "#5c6370",
+                "text": "#abb2bf",
+                "subtext0": "#5c6370",
+                "foreground": "#abb2bf",
+                "comment": "#5c6370",
+                "selection": "#3e4451",
+                "accent_green": "#98c379",
+                "accent_orange": "#d19a66",
+                "accent_purple": "#c678dd",
+                "accent_keyword": "#c678dd",
+                "accent_blue": "#61afef",
+                "accent_yellow": "#e5c07b",
+                "parameter": "#abb2bf",
+                "operator": "#abb2bf",
+                "punctuation": "#abb2bf",
+                "accent_red": "#e06c75",
+            },
+            "tokyo_night": {
+                "base": "#24283b",
+                "surface0": "#2f3549",
+                "surface1": "#414868",
+                "text": "#c0caf5",
+                "subtext0": "#565f89",
+                "foreground": "#c8d3f5",
+                "comment": "#565f89",
+                "selection": "#3b4261",
+                "accent_green": "#9ece6a",
+                "accent_orange": "#ff9e64",
+                "accent_purple": "#c6a0f6",
+                "accent_keyword": "#bb9af7",
+                "accent_blue": "#7aa2f7",
+                "accent_yellow": "#e0af68",
+                "parameter": "#c8d3f5",
+                "operator": "#c8d3f5",
+                "punctuation": "#c8d3f5",
+                "accent_red": "#f7768e",
+            },
+            "night_owl": {
+                "base": "#011627",
+                "surface0": "#112630",
+                "surface1": "#2d3f44",
+                "subtext0": "#637777",
+                "foreground": "#d6deeb",
+                "comment": "#637777",
+                "selection": "#1d3b53",
+                "accent_green": "#addb67",
+                "text": "#f78c6c",
+                "accent_purple": "#c792ea",
+                "accent_keyword": "#c792ea",
+                "accent_blue": "#82aaff",
+                "accent_yellow": "#ffcb8b",
+                "parameter": "#d6deeb",
+                "operator": "#c792ea",
+                "punctuation": "#d6deeb",
+                "accent_red": "#f07178",
+            },
+            "github_dark": {
+                "base": "#0d1117",
+                "surface0": "#161b22",
+                "text": "#da3633",
+                "surface1": "#8b949e",
+                "accent_blue": "#58a6ff",
+                "accent_blue_hover": "#1f6feb",
+                "selection": "#30363d",
+                "accent_green": "#238636",
+                "accent_yellow": "#d29922",
+                "accent_red": "#da3633",
+                "accent_purple": "#8250df",
+                "diff_add": "#28a745",
+                "diff_remove": "#cb2431",
+                "diff_change": "#e6b819",
+                "code_background": "#161b22",
+                "code_text": "#c9d1d9",
+                "code_keyword": "#f97583",
+                "code_string": "#9ecbff",
+                "code_comment": "#6e7781",
+                "code_number": "#79c0ff",
+                "code_function": "#d2a8ff",
+                "code_variable": "#c9d1d9",
+                "code_operator": "#c9d1d9",
+            },
+            "moneygazer": {
+                "base": "#060b13",
+                "surface0": "#0c1527",
+                "surface1": "#3e6ac1",
+                "text": "#fc9d03",
+                "subtext0": "#657b83",
+                "foreground": "#eee8d5",
+                "comment": "#93a1a1",
+                "selection": "#002433",
+                "accent_pink": "#d33682",
+                "accent_blue": "#268bd2",
+                "accent_green": "#859900",
+                "accent_yellow": "#b58900",
+                "accent_orange": "#cb4b16",
+                "parameter": "#6c71c4",
+                "operator": "#839496",
+                "punctuation": "#93a1a1",
+            }
         }
 
-        # Set application icon
-        try:
-            # Try to set the window icon
-            if getattr(sys, "frozen", False):
-                # If the application is run as a bundle, the PyInstaller bootloader
-                # extends the sys module by a flag frozen=True and sets the app
-                # path into variable _MEIPASS'.
-                application_path = sys._MEIPASS
-            else:
-                application_path = os.path.dirname(os.path.abspath(__file__))
-            icon_path = os.path.join(application_path, "snipstudio.ico")
-            self.root.iconbitmap(icon_path)
-
-        except Exception as e:
-            # Silently fail if icon is not found
-            print(f"Icon not found: {e}")
-
-        # Set application title with logo
-        title_frame = tk.Frame(root, bg=self.catppuccin["base"])
-        title_frame.pack(fill=tk.X, padx=10, pady=5)
-
-        try:
-            # Load and display logo image
-            if getattr(sys, "frozen", False):
-                application_path = sys._MEIPASS
-            else:
-                application_path = os.path.dirname(os.path.abspath(__file__))
-            logo_path = os.path.join(application_path, "snipstudio.jpg")
-            self.logo_img = tk.PhotoImage(file=logo_path)
-            self.logo_img = self.logo_img.subsample(30, 30)  # Resize image if needed
-            logo_label = tk.Label(
-                title_frame, image=self.logo_img, bg=self.catppuccin["base"]
-            )
-            logo_label.pack(side=tk.LEFT, padx=(0, 10))
-        except Exception as e:
-            # If logo image fails to load, print error but continue
-            print(f"Logo image not found: {e}")
-
-        # Add title text next to logo
-        title_label = tk.Label(
-            title_frame,
-            text="SnipStudio",
-            font=("Helvetica", 16, "bold"),
-            fg=self.catppuccin["blue"],
-            bg=self.catppuccin["base"],
-        )
-        title_label.pack(side=tk.LEFT)
-        self.root.geometry("1400x700")
-
-        self.dracula_colors = {
-            "base": "#282a36",
-            "surface0": "#44475a",
-            "surface1": "#6272a4",
-            "text": "#f8f8f2",
-            "subtext0": "#6272a4",
-            "foreground": "#f8f8f2",
-            "comment": "#6272a4",
-            "selection": "#44475a",
-            "currentLine": "#44475a",
-            "cyan": "#8be9fd",
-            "green": "#50fa7b",
-            "orange": "#ffb86c",
-            "pink": "#ff79c6",
-            "purple": "#bd93f9",
-            "red": "#ff5555",
-            "yellow": "#f1fa8c",
-        }
-
-        self.one_dark_pro_colors = {
-            "base": "#282c34",
-            "surface0": "#3a3f4b",
-            "surface1": "#5c6370",
-            "text": "#abb2bf",
-            "subtext0": "#5c6370",
-            "foreground": "#abb2bf",
-            "comment": "#5c6370",
-            "selection": "#3e4451",
-            "string": "#98c379",
-            "number": "#d19a66",
-            "boolean": "#c678dd",
-            "keyword": "#c678dd",
-            "function": "#61afef",
-            "class": "#e5c07b",
-            "parameter": "#abb2bf",
-            "operator": "#abb2bf",
-            "punctuation": "#abb2bf",
-            "variable": "#e06c75",
-        }
-
-        self.tokyo_night_storm = {
-            "base": "#24283b",
-            "surface0": "#2f3549",
-            "surface1": "#414868",
-            "text": "#c0caf5",
-            "subtext0": "#565f89",
-            "foreground": "#c8d3f5",
-            "comment": "#565f89",
-            "selection": "#3b4261",
-            "string": "#9ece6a",
-            "number": "#ff9e64",
-            "boolean": "#c6a0f6",
-            "keyword": "#bb9af7",
-            "function": "#7aa2f7",
-            "class": "#e0af68",
-            "parameter": "#c8d3f5",
-            "operator": "#c8d3f5",
-            "punctuation": "#c8d3f5",
-            "variable": "#f7768e",
-        }
-
-        self.night_owl_colors = {
-            "base": "#011627",
-            "surface0": "#112630",
-            "surface1": "#2d3f44",
-            "subtext0": "#637777",
-            "foreground": "#d6deeb",
-            "comment": "#637777",
-            "selection": "#1d3b53",
-            "string": "#addb67",
-            "text": "#f78c6c",
-            "boolean": "#c792ea",
-            "keyword": "#c792ea",
-            "function": "#82aaff",
-            "class": "#ffcb8b",
-            "parameter": "#d6deeb",
-            "operator": "#c792ea",
-            "punctuation": "#d6deeb",
-            "variable": "#f07178",
-        }
-        self.github_dark_colors = {
-            "base": "#0d1117",  # Main background
-            "surface0": "#161b22",  # slightly lighter background for panels/cards
-            "text": "#da3633",  # Primary text color
-            "secondary_text": "#8b949e",  # less emphasized text
-            "link": "#58a6ff",  # Links
-            "link_hover": "#1f6feb",  # Link hover color
-            "selection": "#30363d",  # Borders
-            "accent_blue": "#2f81f7",  # blue accent color
-            "accent_green": "#238636",  # green accent color
-            "accent_yellow": "#d29922",  # yellow accent color
-            "accent_red": "#da3633",  # red accent color
-            "accent_purple": "#8250df",  # purple accent color
-            "diff_add": "#28a745",  # green for added lines in diffs
-            "diff_remove": "#cb2431",  # red for removed lines in diffs
-            "diff_change": "#e6b819",  # yellow for changed lines in diffs
-            "code_background": "#161b22",  # background for code blocks
-            "code_text": "#c9d1d9",  # text inside code blocks
-            "code_keyword": "#f97583",  # keywords in code
-            "code_string": "#9ecbff",  # strings in code
-            "code_comment": "#6e7781",  # comments in code
-            "code_number": "#79c0ff",  # numbers in code
-            "code_function": "#d2a8ff",  # function names in code
-            "code_variable": "#c9d1d9",  # variables in code
-            "code_operator": "#c9d1d9",  # operators in code
-        }
-
-        # Iterate through the dictionary:
-
-        # Apply theme
-        self.configure_theme()
+        # Set default theme
+        self.current_theme = "catppuccin"
+        # Initialize theme_var
+        self.theme_var = tk.StringVar(value=self.current_theme)
 
         # Database setup
         self.conn = sqlite3.connect("code_snippets.db")
         self.create_table()
         self.create_settings_table()
 
-        # GUI Components
+        # Load last used theme and snippet
+        self.load_last_used_theme()
+
+        # Apply theme and configure UI
+        self.configure_theme()
+        self.set_title_bar()
         self.create_widgets()
+
+        # Set application icon
+        try:
+            if getattr(sys, "frozen", False):
+                application_path = sys._MEIPASS
+            else:
+                application_path = os.path.dirname(os.path.abspath(__file__))
+            icon_path = os.path.join(application_path, "snipstudio.ico")
+            self.root.iconbitmap(icon_path)
+        except Exception:
+            print("Icon not found, using default icon.")
+
+        # Set application title with logo and apply theme
+
+        self.root.geometry("1400x700")
+
         self.populate_listbox()
         self.populate_categories()
-
-        # Load last used snippet if available
         self.load_last_used_snippet()
-        self.load_last_used_theme()  # Load last used theme
 
-        # Register window close event
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
-
-        # Add Ctrl+S binding for saving
         self.root.bind("<Control-s>", lambda event: self.save_snippet())
-        # Add Ctrl+h to show shortcuts
         self.root.bind("<Control-h>", lambda event: self.show_keyboard_shortcuts())
-
-        # Bind Ctrl+number keys to select snippets
-        for i in range(10):  # 0-9
+        for i in range(10):
             self.root.bind(
                 f"<Control-Key-{i}>",
                 lambda event, index=i: self.go_to_snippet_by_index(index),
             )
+
+    def set_title_bar(self):
+        """Configures the title bar with the logo and title, applying the current theme."""
+        theme_colors = self.themes[self.current_theme]
+        title_frame = tk.Frame(self.root, bg=theme_colors["base"])
+        title_frame.pack(fill=tk.X, padx=10, pady=5)
+
+        try:
+            if getattr(sys, "frozen", False):
+                application_path = sys._MEIPASS
+            else:
+                application_path = os.path.dirname(os.path.abspath(__file__))
+            logo_path = os.path.join(application_path, "snipstudio.jpg")
+            self.logo_img = tk.PhotoImage(file=logo_path)
+            self.logo_img = self.logo_img.subsample(30, 30)
+            logo_label = tk.Label(
+                title_frame, image=self.logo_img, bg=theme_colors["base"]
+            )
+            logo_label.pack(side=tk.LEFT, padx=(0, 10))
+        except Exception:
+            print("Logo image not found.")
+
+        title_label = tk.Label(
+            title_frame,
+            text="SnipStudio",
+            font=("Helvetica", 16, "bold"),
+            fg=theme_colors["accent_blue"],
+            bg=theme_colors["base"],
+        )
+        title_label.pack(side=tk.LEFT)
 
     def go_to_snippet_by_index(self, index):
         if self.listbox.size() > index:
             self.listbox.selection_clear(0, tk.END)
             self.listbox.selection_set(index)
             self.listbox.see(index)
-            self.show_snippet(None)  # Pass None since it's not an event trigger
+            self.show_snippet(None)
 
     def show_keyboard_shortcuts(self):
+        theme_colors = self.themes[self.current_theme]
         shortcuts_window = tk.Toplevel(self.root)
         shortcuts_window.title("Keyboard Shortcuts")
         shortcuts_window.geometry("300x200")
-        shortcuts_window.configure(bg=self.catppuccin["surface0"])
+        shortcuts_window.configure(bg=theme_colors["surface0"])
 
         shortcuts_text = scrolledtext.ScrolledText(
             shortcuts_window,
             wrap=tk.WORD,
-            bg=self.catppuccin["surface0"],
-            fg=self.catppuccin["text"],
+            bg=theme_colors["surface0"],
+            fg=theme_colors["text"],
             font=("Consolas", 10),
         )
         shortcuts_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
@@ -258,7 +267,7 @@ class CodeStorageApp:
         """
 
         shortcuts_text.insert(tk.END, shortcuts)
-        shortcuts_text.config(state=tk.DISABLED)  # Make it read-only
+        shortcuts_text.config(state=tk.DISABLED)
 
     def create_settings_table(self):
         cursor = self.conn.cursor()
@@ -280,25 +289,29 @@ class CodeStorageApp:
 
     def load_last_used_snippet(self):
         cursor = self.conn.cursor()
-        cursor.execute("SELECT value FROM settings WHERE key=?", ("last_used_snippet",))
+        cursor.execute(
+            "SELECT value FROM settings WHERE key=?", ("last_used_snippet",)
+        )
         result = cursor.fetchone()
 
         if result:
-            last_snippet_id = result[0]
+            last_snippet_id = int(result[0])  # Ensure the ID is an integer
             cursor.execute("SELECT title FROM snippets WHERE id=?", (last_snippet_id,))
             title_result = cursor.fetchone()
 
             if title_result:
                 title = title_result[0]
-                # Find the index of the title in the listbox
                 for i in range(self.listbox.size()):
                     if self.listbox.get(i) == title:
                         self.listbox.selection_set(i)
                         self.listbox.see(i)
-                        self.show_snippet_by_id(last_snippet_id)
+                        self.show_snippet_by_id(
+                            last_snippet_id
+                        )  # Use the dedicated method
                         break
 
     def show_snippet_by_id(self, snippet_id):
+        """Show snippet details by ID, ensuring proper type handling."""
         cursor = self.conn.cursor()
         cursor.execute("SELECT * FROM snippets WHERE id=?", (snippet_id,))
         row = cursor.fetchone()
@@ -311,145 +324,104 @@ class CodeStorageApp:
             self.code_editor.insert("1.0", row[3])
 
     def on_closing(self):
-        # Save the currently selected snippet as the last used
         snippet_id = self.current_snippet_id()
         if snippet_id:
             self.save_last_used_snippet(snippet_id)
 
-        # Save the currently selected theme
         self.save_last_used_theme(self.current_theme)
 
-        # Close the database connection
         if hasattr(self, "conn"):
             self.conn.close()
 
-        # Close the application
         self.root.destroy()
 
     def configure_theme(self):
-        # Configure the main window
-        self.root.configure(bg=self.catppuccin["base"])
+        """Configures the application theme and applies it to the main window."""
+        theme_colors = self.themes[self.current_theme]
+        self.root.configure(bg=theme_colors["base"])
 
-        # Create a custom theme
         style = ttk.Style()
         style.theme_create(
-            "catppuccin",
+            "custom_theme",
             parent="alt",
             settings={
-                "TFrame": {"configure": {"background": self.catppuccin["base"]}},
+                "TFrame": {"configure": {"background": theme_colors["base"]}},
                 "TLabel": {
                     "configure": {
-                        "background": self.catppuccin["base"],
-                        "foreground": self.catppuccin["text"],
+                        "background": theme_colors["base"],
+                        "foreground": theme_colors["text"],
                     }
                 },
                 "TButton": {
                     "configure": {
-                        "background": self.catppuccin["surface1"],
-                        "foreground": self.catppuccin["text"],
+                        "background": theme_colors["surface1"],
+                        "foreground": theme_colors["text"],
                         "padding": 6,
                         "relief": "flat",
                     },
                     "map": {
-                        "background": [("active", self.catppuccin["lavender"])],
-                        "foreground": [("active", self.catppuccin["base"])],
+                        "background": [("active", theme_colors["base"])],
+                        "foreground": [("active", theme_colors["surface1"])],
                     },
                 },
                 "TEntry": {
                     "configure": {
-                        "foreground": self.catppuccin["text"],
-                        "fieldbackground": self.catppuccin["surface0"],
-                        "insertcolor": self.catppuccin["text"],
+                        "foreground": theme_colors["text"],
+                        "fieldbackground": theme_colors["surface0"],
+                        "insertcolor": theme_colors["text"],
                         "borderwidth": 1,
                         "relief": "solid",
                     }
                 },
                 "TCombobox": {
                     "configure": {
-                        "foreground": self.catppuccin["text"],
-                        "fieldbackground": self.catppuccin["surface0"],
-                        "selectbackground": self.catppuccin["blue"],
-                        "selectforeground": self.catppuccin["base"],
+                        "foreground": theme_colors["text"],
+                        "fieldbackground": theme_colors["surface0"],
+                        "selectbackground": theme_colors["accent_blue"],
+                        "selectforeground": theme_colors["base"],
                     }
                 },
             },
         )
-        # Theme selection
-        self.current_theme = "catppuccin"  # Default theme
-        self.themes = {
-            "catppuccin": self.catppuccin,
-            "dracula": self.dracula_colors,
-            "one_dark": self.one_dark_pro_colors,
-            "tokyo_night": self.tokyo_night_storm,
-            "night_owl": self.night_owl_colors,
-            "github_dark": self.github_dark_colors,
-        }
+        style.theme_use("custom_theme")
 
-        style.theme_use(self.current_theme)
-
-        # Configure combobox dropdown style based on current theme
-        theme_colors = self.themes[self.current_theme]
         self.root.option_add("*TCombobox*Listbox.background", theme_colors["surface0"])
         self.root.option_add("*TCombobox*Listbox.foreground", theme_colors["text"])
-        self.root.option_add(
-            "*TCombobox*Listbox.selectBackground", theme_colors["blue"]
-        )
-        self.root.option_add(
-            "*TCombobox*Listbox.selectForeground", theme_colors["base"]
-        )
+        self.root.option_add("*TCombobox*Listbox.selectBackground", theme_colors["accent_blue"])
+        self.root.option_add("*TCombobox*Listbox.selectForeground", theme_colors["base"])
 
     def switch_theme(self, theme_name):
+        """Switches the application theme and updates all widgets."""
         if theme_name in self.themes:
             self.current_theme = theme_name
-            theme_colors = self.themes[theme_name]
-
-            # Update the UI with the new theme
-            self.root.configure(bg=theme_colors["base"])
-
-            # Update combobox styles
-            self.root.option_add(
-                "*TCombobox*Listbox.background", theme_colors["surface0"]
-            )
-            self.root.option_add("*TCombobox*Listbox.foreground", theme_colors["text"])
-            self.root.option_add(
-                "*TCombobox*Listbox.selectBackground",
-                theme_colors["blue"]
-                if "blue" in theme_colors
-                else theme_colors["selection"],
-            )
-            self.root.option_add(
-                "*TCombobox*Listbox.selectForeground", theme_colors["base"]
-            )
-
-            # Refresh widgets to apply new theme
-            self.refresh_ui_with_theme()
-            self.save_last_used_theme(theme_name)  # Save the theme
+            self.configure_theme()  # Re-configure the base theme settings
+            self.refresh_ui_with_theme()  # Then refresh all UI elements
+            self.save_last_used_theme(theme_name)
 
     def refresh_ui_with_theme(self):
-        # This method would update all widgets with the current theme
-        # For a complete implementation, you would need to recreate or update all widgets
+        """Refreshes all UI components with the current theme colors."""
         theme_colors = self.themes[self.current_theme]
 
-        # Update listbox colors
+        # Update dynamic widgets
         self.listbox.config(
             bg=theme_colors["surface0"],
             fg=theme_colors["text"],
-            selectbackground=theme_colors["blue"]
-            if "blue" in theme_colors
-            else theme_colors["selection"],
+            selectbackground=theme_colors["accent_blue"],
             selectforeground=theme_colors["base"],
         )
-
-        # Update code editor colors
         self.code_editor.config(
             bg=theme_colors["surface0"],
             fg=theme_colors["text"],
             insertbackground=theme_colors["text"],
-            selectbackground=theme_colors["blue"]
-            if "blue" in theme_colors
-            else theme_colors["selection"],
+            selectbackground=theme_colors["accent_blue"],
             selectforeground=theme_colors["base"],
         )
+
+        # Update the title bar
+        self.set_title_bar()
+
+        # Since ttk widgets are already styled in configure_theme, we just need to refresh
+        # any direct tk widgets or reapply styles if necessary.
 
     def create_table(self):
         cursor = self.conn.cursor()
@@ -466,6 +438,8 @@ class CodeStorageApp:
         widget.focus_set()
 
     def create_widgets(self):
+        theme_colors = self.themes[self.current_theme]
+
         # Search Frame
         search_frame = ttk.Frame(self.root)
         search_frame.pack(pady=10, padx=10, fill=tk.X)
@@ -476,13 +450,12 @@ class CodeStorageApp:
         search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
         search_entry.bind("<KeyRelease>", self.search_snippets)
         self.root.bind("<Control-k>", lambda event: self.focus_input(search_entry))
-        self.root.bind("<Command-k>", lambda event: self.focus_input(search_entry))
 
         # Theme selection
         theme_frame = ttk.Frame(search_frame)
         theme_frame.pack(side=tk.RIGHT, padx=5)
         ttk.Label(theme_frame, text="Theme:").pack(side=tk.LEFT, padx=(0, 5))
-        self.theme_var = tk.StringVar(value=self.current_theme)
+        # Use the existing theme_var instead of creating a new one
         theme_combo = ttk.Combobox(
             theme_frame,
             textvariable=self.theme_var,
@@ -498,19 +471,18 @@ class CodeStorageApp:
         main_frame = ttk.Frame(self.root)
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=20)
 
-        # Listbox for snippets with custom styling
+        # Listbox for snippets
         listbox_frame = ttk.Frame(main_frame)
         listbox_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
 
         ttk.Label(listbox_frame, text="Snippets").pack(anchor=tk.W, pady=(0, 5))
 
-        theme_colors = self.themes[self.current_theme]
         self.listbox = tk.Listbox(
             listbox_frame,
             width=25,
             bg=theme_colors["surface0"],
             fg=theme_colors["text"],
-            selectbackground=theme_colors["blue"],
+            selectbackground=theme_colors["accent_blue"],
             selectforeground=theme_colors["base"],
             borderwidth=1,
             highlightthickness=0,
@@ -518,7 +490,6 @@ class CodeStorageApp:
         self.listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.listbox.bind("<<ListboxSelect>>", self.show_snippet)
 
-        # Add scrollbar to listbox
         listbox_scrollbar = ttk.Scrollbar(
             listbox_frame, orient="vertical", command=self.listbox.yview
         )
@@ -549,7 +520,7 @@ class CodeStorageApp:
 
         form_frame.columnconfigure(1, weight=1)
 
-        # Code Editor with custom styling
+        # Code Editor
         ttk.Label(details_frame, text="Code:").pack(anchor=tk.W)
         self.code_editor = scrolledtext.ScrolledText(
             details_frame,
@@ -557,7 +528,7 @@ class CodeStorageApp:
             bg=theme_colors["surface0"],
             fg=theme_colors["text"],
             insertbackground=theme_colors["text"],
-            selectbackground=theme_colors["blue"],
+            selectbackground=theme_colors["accent_blue"],
             selectforeground=theme_colors["base"],
             font=("Consolas", 10),
         )
@@ -578,11 +549,11 @@ class CodeStorageApp:
             button_frame, text="Delete", command=self.delete_snippet
         )
         delete_btn.pack(side=tk.LEFT, padx=5)
+
         copy_btn = ttk.Button(button_frame, text="Copy", command=self.copy_snippet)
         copy_btn.pack(side=tk.LEFT, padx=5)
         self.root.bind("<Control-c>", lambda event: self.copy_snippet())
 
-        # Button to show keyboard shortcuts
         shortcuts_btn = ttk.Button(
             button_frame, text="Shortcuts", command=self.show_keyboard_shortcuts
         )
@@ -614,20 +585,18 @@ class CodeStorageApp:
 
     def copy_snippet(self):
         pyperclip.copy(self.code_editor.get("1.0", tk.END))
-
-        messagebox.showinfo("Success", "Successfully Copied ")
+        messagebox.showinfo("Success", "Successfully Copied")
 
     def save_snippet(self):
         title = self.title_var.get().strip()
         category = self.category_var.get().strip()
-        code = self.code_editor.get("1.0", tk.END)
-        if not title or not code.strip():
+        code = self.code_editor.get("1.0", tk.END).strip()
+        if not title or not code:
             messagebox.showwarning("Input Error", "Title and Code are required!")
             return
 
         cursor = self.conn.cursor()
         if self.current_snippet_id():
-            # Update existing snippet
             cursor.execute(
                 """UPDATE snippets SET
                            title=?, category=?, code=?
@@ -636,13 +605,11 @@ class CodeStorageApp:
             )
             message = "Snippet updated successfully"
         else:
-            # Insert new snippet
             cursor.execute(
                 """INSERT INTO snippets (title, category, code)
                            VALUES (?, ?, ?)""",
                 (title, category, code),
             )
-            # Get the ID of the newly inserted snippet
             cursor.execute("SELECT last_insert_rowid()")
             new_id = cursor.fetchone()[0]
             self.save_last_used_snippet(new_id)
@@ -687,7 +654,6 @@ class CodeStorageApp:
             self.category_var.set(row[2] if row[2] else "")
             self.code_editor.delete("1.0", tk.END)
             self.code_editor.insert("1.0", row[3])
-            # Save this as the last used snippet
             self.save_last_used_snippet(row[0])
 
     def current_snippet_id(self):
@@ -731,16 +697,10 @@ class CodeStorageApp:
         result = cursor.fetchone()
         if result:
             last_theme_name = result[0]
-            self.current_theme = last_theme_name
             if last_theme_name in self.themes:
-                # self.switch_theme(last_theme_name)
-                self.theme_var.set(last_theme_name)
                 self.current_theme = last_theme_name
-
-            else:
-                print(f"Theme '{last_theme_name}' not found, using default.")
-        else:
-            print("No last used theme found, using default.")
+                # Updated to use the theme_var that's now initialized earlier
+                self.theme_var.set(last_theme_name)
 
 
 if __name__ == "__main__":
