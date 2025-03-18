@@ -140,6 +140,35 @@ class CodeStorageApp:
             "punctuation": "#d6deeb",
             "variable": "#f07178",
         }
+        self.github_dark_colors = {
+        "base": "#0d1117",  # Main background
+        "surface0": "#161b22", # slightly lighter background for panels/cards
+        "text": "#da3633",  # Primary text color
+        "secondary_text": "#8b949e", # less emphasized text
+        "link": "#58a6ff",  # Links
+        "link_hover": "#1f6feb", # Link hover color
+        "selection": "#30363d",  # Borders
+        "accent_blue": "#2f81f7", # blue accent color
+        "accent_green": "#238636", # green accent color
+        "accent_yellow": "#d29922", # yellow accent color
+        "accent_red": "#da3633", # red accent color
+        "accent_purple": "#8250df", # purple accent color
+        "diff_add": "#28a745", # green for added lines in diffs
+        "diff_remove": "#cb2431", # red for removed lines in diffs
+        "diff_change": "#e6b819", # yellow for changed lines in diffs
+        "code_background": "#161b22", # background for code blocks
+        "code_text": "#c9d1d9", # text inside code blocks
+        "code_keyword": "#f97583", # keywords in code
+        "code_string": "#9ecbff", # strings in code
+        "code_comment": "#6e7781", # comments in code
+        "code_number": "#79c0ff", # numbers in code
+        "code_function": "#d2a8ff", # function names in code
+        "code_variable": "#c9d1d9", # variables in code
+        "code_operator": "#c9d1d9" # operators in code
+    }
+
+
+# Iterate through the dictionary:
 
         # Apply theme
         self.configure_theme()
@@ -210,7 +239,7 @@ class CodeStorageApp:
             self.category_var.set(row[2] if row[2] else "")
             self.code_editor.delete("1.0", tk.END)
             self.code_editor.insert("1.0", row[3])
-
+#todo store last used theme 
     def on_closing(self):
         # Save the currently selected snippet as the last used
         snippet_id = self.current_snippet_id()
@@ -280,6 +309,7 @@ class CodeStorageApp:
             "one_dark": self.one_dark_pro_colors,
             "tokyo_night": self.tokyo_night_storm,
             "night_owl": self.night_owl_colors,
+            "github_dark":self.github_dark_colors
         }
 
         style.theme_use(self.current_theme)
@@ -473,6 +503,8 @@ class CodeStorageApp:
         delete_btn.pack(side=tk.LEFT, padx=5)
         copy_btn = ttk.Button(button_frame, text="Copy", command=self.copy_snippet)
         copy_btn.pack(side=tk.LEFT, padx=5)
+        self.root.bind("<Control-c>",lambda event: self.copy_snippet())
+
 
     def populate_listbox(self, search_query=None):
         self.listbox.delete(0, tk.END)
@@ -500,6 +532,8 @@ class CodeStorageApp:
 
     def copy_snippet(self):
         pyperclip.copy(self.code_editor.get("1.0", tk.END))
+
+        messagebox.showinfo('Success',"Successfully Copied ")
 
     def save_snippet(self):
         title = self.title_var.get().strip()
