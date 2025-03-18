@@ -191,12 +191,67 @@ class CodeStorageApp:
 
         # Add Ctrl+S binding for saving
         self.root.bind("<Control-s>", lambda event: self.save_snippet())
+        # Add Ctrl+h to show shortcuts
+        self.root.bind("<Control-h>", lambda event: self.show_keyboard_shortcuts())
+
+        # Bind Ctrl+number keys to select snippets
+        for i in range(10):  # 0-9
+            self.root.bind(
+                f"<Control-Key-{i}>",
+                lambda event, index=i: self.go_to_snippet_by_index(index),
+            )
+
+    def go_to_snippet_by_index(self, index):
+        if self.listbox.size() > index:
+            self.listbox.selection_clear(0, tk.END)
+            self.listbox.selection_set(index)
+            self.listbox.see(index)
+            self.show_snippet(None)  # Pass None since it's not an event trigger
+
+    def show_keyboard_shortcuts(self):
+        shortcuts_window = tk.Toplevel(self.root)
+        shortcuts_window.title("Keyboard Shortcuts")
+        shortcuts_window.geometry("300x200")
+        shortcuts_window.configure(bg=self.catppuccin["surface0"])
+
+        shortcuts_text = scrolledtext.ScrolledText(
+            shortcuts_window,
+            wrap=tk.WORD,
+            bg=self.catppuccin["surface0"],
+            fg=self.catppuccin["text"],
+            font=("Consolas", 10),
+        )
+        shortcuts_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        shortcuts = """
+        Keyboard Shortcuts:
+        - Ctrl+S: Save Snippet
+        - Ctrl+K: Focus Search Bar
+        - Ctrl+C: Copy Snippet
+        - Ctrl+T: Clear Fields
+        - Ctrl+0: Go to Snippet 1
+        - Ctrl+1: Go to Snippet 2
+        - Ctrl+2: Go to Snippet 3
+        - Ctrl+3: Go to Snippet 4
+        - Ctrl+4: Go to Snippet 5
+        - Ctrl+5: Go to Snippet 6
+        - Ctrl+6: Go to Snippet 7
+        - Ctrl+7: Go to Snippet 8
+        - Ctrl+8: Go to Snippet 9
+        - Ctrl+9: Go to Snippet 10
+        - Ctrl+H: Show this help
+        """
+
+        shortcuts_text.insert(tk.END, shortcuts)
+        shortcuts_text.config(state=tk.DISABLED)  # Make it read-only
 
     def create_settings_table(self):
         cursor = self.conn.cursor()
-        cursor.execute("""CREATE TABLE IF NOT EXISTS settings
+        cursor.execute(
+            """CREATE TABLE IF NOT EXISTS settings
                           (key TEXT PRIMARY KEY,
-                           value TEXT)""")
+                           value TEXT)"""
+        )
         self.conn.commit()
 
     def save_last_used_snippet(self, snippet_id):
@@ -248,8 +303,9 @@ class CodeStorageApp:
             self.save_last_used_snippet(snippet_id)
 
         # Save the currently selected theme
-        self.save_last_used_theme(self.current_theme)
+        self.last_used_theme = self.save_last_used_theme(self.current_theme)
 
+        self.current_theme = self.last_used_theme
         # Close the database connection
         if hasattr(self, "conn"):
             self.conn.close()
@@ -384,11 +440,13 @@ class CodeStorageApp:
 
     def create_table(self):
         cursor = self.conn.cursor()
-        cursor.execute("""CREATE TABLE IF NOT EXISTS snippets
+        cursor.execute(
+            """CREATE TABLE IF NOT EXISTS snippets
                           (id INTEGER PRIMARY KEY AUTOINCREMENT,
                            title TEXT NOT NULL,
                            category TEXT,
-                           code TEXT NOT NULL)""")
+                           code TEXT NOT NULL)"""
+        )
         self.conn.commit()
 
     def focus_input(self, widget):
@@ -501,6 +559,7 @@ class CodeStorageApp:
 
         clear_btn = ttk.Button(button_frame, text="Clear", command=self.clear_fields)
         clear_btn.pack(side=tk.LEFT, padx=5)
+        self.root.bind("<Control-t>", lambda event: self.clear_fields())
 
         delete_btn = ttk.Button(
             button_frame, text="Delete", command=self.delete_snippet
@@ -509,6 +568,12 @@ class CodeStorageApp:
         copy_btn = ttk.Button(button_frame, text="Copy", command=self.copy_snippet)
         copy_btn.pack(side=tk.LEFT, padx=5)
         self.root.bind("<Control-c>", lambda event: self.copy_snippet())
+
+        # Button to show keyboard shortcuts
+        shortcuts_btn = ttk.Button(
+            button_frame, text="Shortcuts", command=self.show_keyboard_shortcuts
+        )
+        shortcuts_btn.pack(side=tk.RIGHT, padx=5)
 
     def populate_listbox(self, search_query=None):
         self.listbox.delete(0, tk.END)
@@ -653,8 +718,10 @@ class CodeStorageApp:
         result = cursor.fetchone()
         if result:
             last_theme_name = result[0]
+            self.current_theme = last_theme_name
             if last_theme_name in self.themes:
                 self.switch_theme(last_theme_name)
+                self.current_theme = last_theme_name
             else:
                 print(f"Theme '{last_theme_name}' not found, using default.")
         else:
