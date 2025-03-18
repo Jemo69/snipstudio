@@ -10,7 +10,6 @@ SnipStudio is designed to be a simple and easy-to-use application for anyone who
 - **Copy to Clipboard:** Copy code snippets to your clipboard with a single click, making it super easy to paste them into your projects.
 - **User-friendly Interface:**  SnipStudio has a clear and intuitive graphical interface, styled with a modern Catppuccin theme, so it's pleasant to use.
 - **Persistent Storage:** Your snippets are saved in a local database, so they're always there when you need them.
-- **Syntax Highlighting (Planned):**  We're planning to add syntax highlighting in the future to make code snippets even easier to read.
 
 ## How to Install
 

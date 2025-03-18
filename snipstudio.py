@@ -185,6 +185,7 @@ class CodeStorageApp:
 
         # Load last used snippet if available
         self.load_last_used_snippet()
+        self.load_last_used_theme() # Load last used theme
 
         # Register window close event
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -239,12 +240,15 @@ class CodeStorageApp:
             self.category_var.set(row[2] if row[2] else "")
             self.code_editor.delete("1.0", tk.END)
             self.code_editor.insert("1.0", row[3])
-#todo store last used theme 
+#todo store last used theme
     def on_closing(self):
         # Save the currently selected snippet as the last used
         snippet_id = self.current_snippet_id()
         if snippet_id:
             self.save_last_used_snippet(snippet_id)
+
+        # Save the currently selected theme
+        self.save_last_used_theme(self.current_theme)
 
         # Close the database connection
         if hasattr(self, "conn"):
@@ -350,6 +354,7 @@ class CodeStorageApp:
 
             # Refresh widgets to apply new theme
             self.refresh_ui_with_theme()
+            self.save_last_used_theme(theme_name) # Save the theme
 
     def refresh_ui_with_theme(self):
         # This method would update all widgets with the current theme
@@ -512,7 +517,7 @@ class CodeStorageApp:
 
         if search_query:
             cursor.execute(
-                """SELECT id, title FROM snippets 
+                """SELECT id, title FROM snippets
                            WHERE title LIKE ? OR category LIKE ? OR code LIKE ?""",
                 (f"%{search_query}%", f"%{search_query}%", f"%{search_query}%"),
             )
@@ -547,7 +552,7 @@ class CodeStorageApp:
         if self.current_snippet_id():
             # Update existing snippet
             cursor.execute(
-                """UPDATE snippets SET 
+                """UPDATE snippets SET
                            title=?, category=?, code=?
                            WHERE id=?""",
                 (title, category, code, self.current_snippet_id()),
@@ -633,6 +638,28 @@ class CodeStorageApp:
     def __del__(self):
         if hasattr(self, "conn"):
             self.conn.close()
+
+    def save_last_used_theme(self, theme_name):
+        if theme_name:
+            cursor = self.conn.cursor()
+            cursor.execute(
+                "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+                ("last_used_theme", theme_name),
+            )
+            self.conn.commit()
+
+    def load_last_used_theme(self):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT value FROM settings WHERE key=?", ("last_used_theme",))
+        result = cursor.fetchone()
+        if result:
+            last_theme_name = result[0]
+            if last_theme_name in self.themes:
+                self.switch_theme(last_theme_name)
+            else:
+                print(f"Theme '{last_theme_name}' not found, using default.")
+        else:
+            print("No last used theme found, using default.")
 
 
 if __name__ == "__main__":
