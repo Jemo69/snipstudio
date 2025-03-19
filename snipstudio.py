@@ -235,7 +235,7 @@ class CodeStorageApp:
         theme_colors = self.themes[self.current_theme]
         shortcuts_window = tk.Toplevel(self.root)
         shortcuts_window.title("Keyboard Shortcuts")
-        shortcuts_window.geometry("300x200")
+        shortcuts_window.geometry("300x250") # Increased height to accommodate new shortcut
         shortcuts_window.configure(bg=theme_colors["surface0"])
 
         shortcuts_text = scrolledtext.ScrolledText(
@@ -253,16 +253,7 @@ class CodeStorageApp:
         - Ctrl+K: Focus Search Bar
         - Ctrl+C: Copy Snippet
         - Ctrl+T: Clear Fields
-        - Ctrl+0: Go to Snippet 1
-        - Ctrl+1: Go to Snippet 2
-        - Ctrl+2: Go to Snippet 3
-        - Ctrl+3: Go to Snippet 4
-        - Ctrl+4: Go to Snippet 5
-        - Ctrl+5: Go to Snippet 6
-        - Ctrl+6: Go to Snippet 7
-        - Ctrl+7: Go to Snippet 8
-        - Ctrl+8: Go to Snippet 9
-        - Ctrl+9: Go to Snippet 10
+        - :<number>: Go to Snippet <number>
         - Ctrl+H: Show this help
         """
 
@@ -491,6 +482,9 @@ class CodeStorageApp:
         )
         self.listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.listbox.bind("<<ListboxSelect>>", self.show_snippet)
+        self.listbox.bind(":", self.initiate_vim_command) # Bind colon key
+        self.listbox.bind("j", self.move_selection_down) # Bind j key
+        self.listbox.bind("k", self.move_selection_up) # Bind k key
 
         listbox_scrollbar = ttk.Scrollbar(
             listbox_frame, orient="vertical", command=self.listbox.yview
@@ -560,6 +554,83 @@ class CodeStorageApp:
             button_frame, text="Shortcuts", command=self.show_keyboard_shortcuts
         )
         shortcuts_btn.pack(side=tk.RIGHT, padx=5)
+
+        # Vim-like command entry (initially hidden)
+        self.vim_command_entry = ttk.Entry(main_frame) # Parent to main_frame
+        self.vim_command_entry.pack(side=tk.BOTTOM, pady=5, fill=tk.X) # Pack at the bottom
+        self.vim_command_entry.lower() # Hide it behind other widgets initially
+        self.vim_command_entry.bind("<Return>", self.process_vim_command)
+        self.vim_command_entry.bind("<Escape>", self.hide_vim_command)
+        self.vim_command_entry.bind("<FocusOut>", self.hide_vim_command) # Hide if focus is lost
+        self.root.bind('<Alt-v>',lambda event: self.focus_input(self.vim_command_entry))
+
+    def initiate_vim_command(self, event):
+        self.vim_command_entry.lift(self.root) # Bring entry to front, relative to root
+        self.vim_command_entry.focus_set()
+        self.vim_command_entry.selection_range(0, tk.END) # Select all text for easy overwrite
+
+    def move_selection_down(self, event):
+        current_selection = self.listbox.curselection()
+        if not current_selection:
+            self.listbox.selection_set(0)
+            self.listbox.see(0)
+            self.show_snippet(None)
+            return
+
+        current_index = current_selection[0]
+        next_index = min(current_index + 1, self.listbox.size() - 1)
+        if next_index != current_index:
+            self.listbox.selection_clear(0, tk.END)
+            self.listbox.selection_set(next_index)
+            self.listbox.see(next_index)
+            self.show_snippet(None)
+
+    def move_selection_up(self, event):
+        current_selection = self.listbox.curselection()
+        if not current_selection:
+            self.listbox.selection_set(tk.END)
+            self.listbox.see(tk.END)
+            self.show_snippet(None)
+            return
+
+        current_index = current_selection[0]
+        prev_index = max(current_index - 1, 0)
+        if prev_index != current_index:
+            self.listbox.selection_clear(0, tk.END)
+            self.listbox.selection_set(prev_index)
+            self.listbox.see(prev_index)
+            self.show_snippet(None)
+
+
+    def process_vim_command(self, event):
+        command = self.vim_command_entry.get()
+        self.hide_vim_command(event) # Hide entry after processing
+
+        if command.startswith(":"):
+            try:
+                snippet_number = int(command[1:])
+                self.go_to_snippet_by_number(snippet_number)
+            except ValueError:
+                messagebox.showerror("Command Error", "Invalid snippet number.")
+        else:
+             messagebox.showerror("Command Error", "Invalid command.")
+
+
+    def hide_vim_command(self, event):
+        self.vim_command_entry.delete(0, tk.END) # Clear entry for next command
+        self.vim_command_entry.lower() # Hide the entry
+
+
+    def go_to_snippet_by_number(self, number):
+        index = number - 1 # 1-based to 0-based index
+        if 0 <= index < self.listbox.size():
+            self.listbox.selection_clear(0, tk.END)
+            self.listbox.selection_set(index)
+            self.listbox.see(index)
+            self.show_snippet(None)
+        else:
+            messagebox.showerror("Navigation Error", "Snippet number out of range.")
+
 
     def populate_listbox(self, search_query=None):
         self.listbox.delete(0, tk.END)
