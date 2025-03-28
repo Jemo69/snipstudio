@@ -13,7 +13,7 @@ class CodeStorageApp:
 
         # Define themes
         self.themes = {
-            "catppuccin_mocha": { # Darkest
+            "catppuccin_mocha": {  # Darkest
                 "base": "#1e1e2e",
                 "mantle": "#181825",
                 "crust": "#11111b",
@@ -41,7 +41,7 @@ class CodeStorageApp:
                 "accent_blue": "#89b4fa",
                 "accent_lavender": "#b4befe",
             },
-            "catppuccin_macchiato": { # Darker
+            "catppuccin_macchiato": {  # Darker
                 "base": "#24273a",
                 "mantle": "#1e2030",
                 "crust": "#181926",
@@ -69,7 +69,7 @@ class CodeStorageApp:
                 "accent_blue": "#8aadf4",
                 "accent_lavender": "#b7bdf8",
             },
-            "catppuccin_frappe": { # Medium-Dark
+            "catppuccin_frappe": {  # Medium-Dark
                 "base": "#303446",
                 "mantle": "#292c3c",
                 "crust": "#232634",
@@ -97,7 +97,7 @@ class CodeStorageApp:
                 "accent_blue": "#8caaee",
                 "accent_lavender": "#babbf1",
             },
-            "catppuccin_latte": { # Light
+            "catppuccin_latte": {  # Light
                 "base": "#eff1f5",
                 "mantle": "#e6e9ef",
                 "crust": "#dce0e8",
