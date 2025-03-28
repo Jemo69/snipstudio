@@ -1,54 +1,25 @@
-# name: Format with Ruff
-
-# on:
-#   push:
-#     branches: [ "main" ]
-#   pull_request:
-#     branches: [ "main" ]
-
-# jobs:
-#   format:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v4
-#       - name: Set up Python 3.12
-#         uses: actions/setup-python@v5
-#         with:
-#           python-version: "3.12"
-#       - name: Install ruff
-#         run: pip install ruff
-#       - name: Run ruff --format
-#         run: ruff format .
-#       - name: Commit changes
-#         run: |
-#           git diff --check
-#           if git diff --quiet; then
-#             echo "No changes to commit"
-#           else
-#             git config --local user.email "github-actions[bot]@users.noreply.github.com"
-#             git config --local user.name "github-actions[bot]"
-#             git add .
-#             git commit -m "Apply ruff formatting"
-#             git push -f origin main
-#           fi
 name: Format with Ruff
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main" ] # Keep PR trigger to check formatting
 
 jobs:
   format:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Grants GITHUB_TOKEN write access to the repository
+      contents: write  # Needed for push on main branch
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}  # Explicitly use the token with write access
-          persist-credentials: true  # Ensure credentials are persisted for git push
+          # For PRs, checkout the PR branch head. For pushes to main, checkout the commit.
+          # Fetch the token for pushing changes back.
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true # Needed for git push
+          # Fetch depth 0 to ensure we have the full history if needed, though not strictly required for this push.
+          # fetch-depth: 0 # Uncomment if other git operations require full history
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -61,15 +32,35 @@ jobs:
       - name: Run ruff --format
         run: ruff format .
 
-      - name: Commit changes
+      # Step to check for changes on PRs without committing
+      # This fails the build if formatting is needed on a PR.
+      - name: Check for formatting changes (PR)
+        if: github.event_name == 'pull_request'
         run: |
-          git diff --check
-          if git diff --quiet; then
-            echo "No changes to commit"
+          if ! git diff --quiet; then
+            echo "::error::Code formatting issues detected. Run 'ruff format .' locally and commit the changes."
+            git diff # Show the diff in the logs
+            exit 1
           else
-            git config --local user.email "github-actions[bot]@users.noreply.github.com"
-            git config --local user.name "github-actions[bot]"
+            echo "Code formatting is correct."
+          fi
+
+      # Step to commit and push changes only on direct pushes to main
+      - name: Commit and Push changes (main)
+        # Only run this step on pushes to the main branch, not on PRs or other branches
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          # Check if ruff made any changes
+          if git diff --quiet; then
+            echo "No formatting changes needed."
+          else
+            echo "Formatting changes detected. Committing and pushing..."
             git add .
-            git commit -m "Apply ruff formatting"
-            git push origin main 
+            # Add [skip ci] to the commit message to prevent this commit from triggering the workflow again
+            git commit -m "Apply ruff formatting [skip ci]"
+            # Push the current commit (HEAD) directly to the remote main branch
+            # This works even if the checkout is in a detached HEAD state
+            git push origin HEAD:refs/heads/main
           fi
