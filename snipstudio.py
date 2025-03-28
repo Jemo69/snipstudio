@@ -88,20 +88,61 @@ class CodeStorageApp:
                 "base": "#011627",
                 "surface0": "#112630",
                 "surface1": "#2d3f44",
-                "subtext0": "#637777",
-                "foreground": "#d6deeb",
+                "text": "#d6deeb", # General text color
+                "subtext0": "#637777", # Less prominent text
+                "foreground": "#d6deeb", # Default foreground for code elements
                 "comment": "#637777",
                 "selection": "#1d3b53",
-                "accent_green": "#addb67",
-                "text": "#f78c6c",
-                "accent_purple": "#c792ea",
-                "accent_keyword": "#c792ea",
-                "accent_blue": "#82aaff",
-                "accent_yellow": "#ffcb8b",
-                "parameter": "#d6deeb",
-                "operator": "#c792ea",
-                "punctuation": "#d6deeb",
-                "accent_red": "#f07178",
+                "accent_green": "#addb67", # Strings, etc.
+                "accent_orange": "#f78c6c", # Numbers, constants
+                "accent_purple": "#c792ea", # Keywords, special constants
+                "accent_keyword": "#c792ea", # Explicitly for keywords if needed
+                "accent_blue": "#82aaff", # Functions, classes
+                "accent_yellow": "#ffcb8b", # Variables, attributes
+                "parameter": "#d6deeb", # Function parameters
+                "operator": "#c792ea", # Operators
+                "punctuation": "#d6deeb", # Punctuation like brackets, commas
+                "accent_red": "#f07178", # Errors, important warnings
+            },
+            "gruvbox_dark": {
+                "base": "#282828",
+                "surface0": "#3c3836",
+                "surface1": "#504945",
+                "text": "#ebdbb2",
+                "subtext0": "#a89984",
+                "foreground": "#ebdbb2",
+                "comment": "#928374",
+                "selection": "#504945",
+                "accent_green": "#b8bb26",
+                "accent_orange": "#fe8019",
+                "accent_purple": "#d3869b",
+                "accent_keyword": "#fb4934", # Often red in gruvbox
+                "accent_blue": "#83a598",
+                "accent_yellow": "#fabd2f",
+                "parameter": "#ebdbb2",
+                "operator": "#ebdbb2",
+                "punctuation": "#ebdbb2",
+                "accent_red": "#fb4934",
+            },
+            "solarized_dark": {
+                "base": "#002b36",
+                "surface0": "#073642",
+                "surface1": "#586e75",
+                "text": "#839496",
+                "subtext0": "#586e75",
+                "foreground": "#839496",
+                "comment": "#586e75",
+                "selection": "#073642",
+                "accent_green": "#859900",
+                "accent_orange": "#cb4b16",
+                "accent_purple": "#d33682",
+                "accent_keyword": "#cb4b16", # Often orange
+                "accent_blue": "#268bd2",
+                "accent_yellow": "#b58900",
+                "parameter": "#93a1a1",
+                "operator": "#93a1a1",
+                "punctuation": "#93a1a1",
+                "accent_red": "#dc322f",
             },
             "github_dark": {
                 "base": "#0d1117",
@@ -148,7 +189,7 @@ class CodeStorageApp:
             },
         }
 
-        # Set default theme
+        # Set default theme (will be overridden by loaded theme if available)
         self.current_theme = "catppuccin"
         # Initialize theme_var
         self.theme_var = tk.StringVar(value=self.current_theme)
@@ -158,13 +199,15 @@ class CodeStorageApp:
         self.create_table()
         self.create_settings_table()
 
-        # Load last used theme and snippet
+        # Load last used theme and snippet BEFORE creating widgets
         self.load_last_used_theme()
+        # Set theme_var again after loading, in case it changed
+        self.theme_var.set(self.current_theme)
 
         # Apply theme and configure UI
-        self.configure_theme()
+        self.configure_theme() # Apply the loaded or default theme styling
         self.set_title_bar()
-        self.create_widgets()
+        self.create_widgets() # Create widgets AFTER theme is known
 
         # Set application icon
         try:
@@ -181,8 +224,10 @@ class CodeStorageApp:
 
         self.root.geometry("1400x700")
 
+        # Populate listbox and categories AFTER widgets are created
         self.populate_listbox()
         self.populate_categories()
+        # Load last used snippet AFTER listbox is populated
         self.load_last_used_snippet()
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -196,9 +241,16 @@ class CodeStorageApp:
 
     def set_title_bar(self):
         """Configures the title bar with the logo and title, applying the current theme."""
+        # Destroy existing title frame if it exists to prevent stacking
+        for widget in self.root.winfo_children():
+            if isinstance(widget, tk.Frame) and widget.winfo_name() == "!title_frame":
+                widget.destroy()
+                break
+
         theme_colors = self.themes[self.current_theme]
-        title_frame = tk.Frame(self.root, bg=theme_colors["base"])
-        title_frame.pack(fill=tk.X, padx=10, pady=5)
+        title_frame = tk.Frame(self.root, bg=theme_colors["base"], name="!title_frame")
+        # Pack it at the top, before other widgets
+        title_frame.pack(side=tk.TOP, fill=tk.X, padx=10, pady=5)
 
         try:
             if getattr(sys, "frozen", False):
@@ -206,14 +258,15 @@ class CodeStorageApp:
             else:
                 application_path = os.path.dirname(os.path.abspath(__file__))
             logo_path = os.path.join(application_path, "snipstudio.jpg")
+            # Ensure logo_img is stored as an instance attribute to prevent garbage collection
             self.logo_img = tk.PhotoImage(file=logo_path)
             self.logo_img = self.logo_img.subsample(30, 30)
             logo_label = tk.Label(
                 title_frame, image=self.logo_img, bg=theme_colors["base"]
             )
             logo_label.pack(side=tk.LEFT, padx=(0, 10))
-        except Exception:
-            print("Logo image not found.")
+        except Exception as e:
+            print(f"Logo image not found or error loading: {e}")
 
         title_label = tk.Label(
             title_frame,
@@ -239,6 +292,9 @@ class CodeStorageApp:
             "300x250"
         )  # Increased height to accommodate new shortcut
         shortcuts_window.configure(bg=theme_colors["surface0"])
+        # Make the shortcuts window transient to the main window
+        shortcuts_window.transient(self.root)
+        shortcuts_window.grab_set() # Keep focus
 
         shortcuts_text = scrolledtext.ScrolledText(
             shortcuts_window,
@@ -246,6 +302,8 @@ class CodeStorageApp:
             bg=theme_colors["surface0"],
             fg=theme_colors["text"],
             font=("Consolas", 10),
+            bd=0, # No border
+            highlightthickness=0 # No highlight border
         )
         shortcuts_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
@@ -255,12 +313,20 @@ class CodeStorageApp:
         - Ctrl+K: Focus Search Bar
         - Ctrl+C: Copy Snippet
         - Ctrl+T: Clear Fields
-        - :<number>: Go to Snippet <number>
+        - :<number>: Go to Snippet <number> (in listbox)
         - Ctrl+H: Show this help
+        - Ctrl+<0-9>: Go to Snippet by index (0-9)
+        - j/k: Move selection down/up (in listbox)
         """
 
-        shortcuts_text.insert(tk.END, shortcuts)
+        shortcuts_text.insert(tk.END, shortcuts.strip())
         shortcuts_text.config(state=tk.DISABLED)
+
+        # Close window on Escape key
+        shortcuts_window.bind("<Escape>", lambda e: shortcuts_window.destroy())
+        # Ensure focus is set to the text widget initially if needed, though grab_set might handle it
+        shortcuts_text.focus_set()
+
 
     def create_settings_table(self):
         cursor = self.conn.cursor()
@@ -273,161 +339,268 @@ class CodeStorageApp:
 
     def save_last_used_snippet(self, snippet_id):
         if snippet_id:
-            cursor = self.conn.cursor()
-            cursor.execute(
-                "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
-                ("last_used_snippet", str(snippet_id)),
-            )
-            self.conn.commit()
+            try:
+                cursor = self.conn.cursor()
+                cursor.execute(
+                    "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+                    ("last_used_snippet", str(snippet_id)),
+                )
+                self.conn.commit()
+            except sqlite3.Error as e:
+                 print(f"Database error saving last snippet: {e}")
+
 
     def load_last_used_snippet(self):
-        cursor = self.conn.cursor()
-        cursor.execute("SELECT value FROM settings WHERE key=?", ("last_used_snippet",))
-        result = cursor.fetchone()
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT value FROM settings WHERE key=?", ("last_used_snippet",))
+            result = cursor.fetchone()
 
-        if result:
-            last_snippet_id = int(result[0])  # Ensure the ID is an integer
-            cursor.execute("SELECT title FROM snippets WHERE id=?", (last_snippet_id,))
-            title_result = cursor.fetchone()
+            if result:
+                try:
+                    last_snippet_id = int(result[0])  # Ensure the ID is an integer
+                    # Check if snippet ID exists before trying to select title
+                    cursor.execute("SELECT title FROM snippets WHERE id=?", (last_snippet_id,))
+                    title_result = cursor.fetchone()
 
-            if title_result:
-                title = title_result[0]
-                for i in range(self.listbox.size()):
-                    if self.listbox.get(i) == title:
-                        self.listbox.selection_set(i)
-                        self.listbox.see(i)
-                        self.show_snippet_by_id(
-                            last_snippet_id
-                        )  # Use the dedicated method
-                        break
+                    if title_result:
+                        title = title_result[0]
+                        # Find the title in the listbox
+                        listbox_items = self.listbox.get(0, tk.END)
+                        if title in listbox_items:
+                            index = listbox_items.index(title)
+                            self.listbox.selection_set(index)
+                            self.listbox.see(index)
+                            self.show_snippet_by_id(last_snippet_id) # Use the dedicated method
+                        else:
+                             print(f"Last used snippet title '{title}' not found in listbox.")
+                    else:
+                        print(f"Last used snippet ID {last_snippet_id} not found in database.")
+                        # Optionally clear the setting if the snippet is gone
+                        # cursor.execute("DELETE FROM settings WHERE key=?", ("last_used_snippet",))
+                        # self.conn.commit()
+                except ValueError:
+                    print(f"Invalid last used snippet ID found in settings: {result[0]}")
+                except tk.TclError as e:
+                    print(f"Error interacting with listbox during snippet load: {e}")
+        except sqlite3.Error as e:
+            print(f"Database error loading last snippet: {e}")
+
 
     def show_snippet_by_id(self, snippet_id):
         """Show snippet details by ID, ensuring proper type handling."""
-        cursor = self.conn.cursor()
-        cursor.execute("SELECT * FROM snippets WHERE id=?", (snippet_id,))
-        row = cursor.fetchone()
-        cursor.close()
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT * FROM snippets WHERE id=?", (snippet_id,))
+            row = cursor.fetchone()
+            cursor.close() # Close cursor immediately after use
 
-        if row:
-            self.title_var.set(row[1])
-            self.category_var.set(row[2] if row[2] else "")
-            self.code_editor.delete("1.0", tk.END)
-            self.code_editor.insert("1.0", row[3])
+            if row:
+                self.title_var.set(row[1])
+                self.category_var.set(row[2] if row[2] else "")
+                self.code_editor.delete("1.0", tk.END)
+                self.code_editor.insert("1.0", row[3])
+        except sqlite3.Error as e:
+            print(f"Database error showing snippet by ID {snippet_id}: {e}")
+        except tk.TclError as e:
+             print(f"Error updating UI for snippet ID {snippet_id}: {e}")
+
 
     def on_closing(self):
+        """Handles application closing cleanly."""
         snippet_id = self.current_snippet_id()
         if snippet_id:
             self.save_last_used_snippet(snippet_id)
 
+        # Save the theme that was active when closing
         self.save_last_used_theme(self.current_theme)
 
         if hasattr(self, "conn"):
-            self.conn.close()
+            try:
+                self.conn.close()
+            except sqlite3.Error as e:
+                print(f"Error closing database on exit: {e}")
 
         self.root.destroy()
 
     def configure_theme(self):
         """Configures the application theme and applies it to the main window."""
+        if self.current_theme not in self.themes:
+            print(f"Warning: Theme '{self.current_theme}' not found. Falling back to default.")
+            self.current_theme = "catppuccin" # Fallback to a known theme
+
         theme_colors = self.themes[self.current_theme]
         self.root.configure(bg=theme_colors["base"])
 
+        # Define or update the custom ttk theme
         style = ttk.Style()
-        style.theme_create(
-            "custom_theme",
-            parent="alt",
-            settings={
-                "TFrame": {"configure": {"background": theme_colors["base"]}},
-                "TLabel": {
-                    "configure": {
-                        "background": theme_colors["base"],
-                        "foreground": theme_colors["text"],
-                    }
-                },
-                "TButton": {
-                    "configure": {
-                        "background": theme_colors["surface1"],
-                        "foreground": theme_colors["text"],
-                        "padding": 6,
-                        "relief": "flat",
+        try:
+            # Check if theme exists to avoid errors on re-configuration
+            style.theme_use("custom_theme")
+        except tk.TclError:
+             # Create the theme if it doesn't exist
+            style.theme_create(
+                "custom_theme",
+                parent="alt",
+                settings={
+                    "TFrame": {"configure": {"background": theme_colors["base"]}},
+                    "TLabel": {
+                        "configure": {
+                            "background": theme_colors["base"],
+                            "foreground": theme_colors["text"],
+                        }
                     },
-                    "map": {
-                        "background": [("active", theme_colors["base"])],
-                        "foreground": [("active", theme_colors["surface1"])],
+                    "TButton": {
+                        "configure": {
+                            "background": theme_colors["surface1"],
+                            "foreground": theme_colors["text"],
+                            "padding": 6,
+                            "relief": "flat",
+                            "borderwidth": 0, # Ensure flat look
+                            "font": ("Helvetica", 9) # Consistent font
+                        },
+                        "map": {
+                            # Use surface0 for hover, base for active press
+                            "background": [("active", theme_colors["base"]),
+                                           ("hover", theme_colors["surface0"])],
+                            "foreground": [("active", theme_colors["text"])], # Keep text color on press
+                        },
                     },
-                },
-                "TEntry": {
-                    "configure": {
-                        "foreground": theme_colors["text"],
-                        "fieldbackground": theme_colors["surface0"],
-                        "insertcolor": theme_colors["text"],
-                        "borderwidth": 1,
-                        "relief": "solid",
+                    "TEntry": {
+                        "configure": {
+                            "foreground": theme_colors["text"],
+                            "fieldbackground": theme_colors["surface0"],
+                            "insertcolor": theme_colors["text"],
+                            "borderwidth": 1, # Keep a subtle border
+                            "relief": "flat", # Use flat relief
+                        },
+                         "map": {
+                             # Change border color on focus
+                             "bordercolor": [("focus", theme_colors["accent_blue"])],
+                             "relief": [("focus", "solid")] # Make border visible on focus
+                         }
+                    },
+                    "TCombobox": {
+                        "configure": {
+                            "foreground": theme_colors["text"],
+                            "fieldbackground": theme_colors["surface0"],
+                            "background": theme_colors["surface0"], # Background of the entry part
+                            "arrowcolor": theme_colors["text"],
+                            "selectbackground": theme_colors["surface0"], # Keep selection same as field bg
+                            "selectforeground": theme_colors["text"],
+                            "borderwidth": 1,
+                            "relief": "flat",
+                        },
+                        "map": {
+                            "background": [("readonly", theme_colors["surface0"])],
+                             # Change border color on focus like TEntry
+                            "bordercolor": [("focus", theme_colors["accent_blue"])],
+                            "relief": [("focus", "solid")]
+                        }
+                    },
+                    "Vertical.TScrollbar": { # Style vertical scrollbars
+                        "configure": {
+                            "background": theme_colors["surface0"],
+                            "troughcolor": theme_colors["base"],
+                            "bordercolor": theme_colors["surface0"],
+                            "arrowcolor": theme_colors["text"],
+                            "relief": "flat"
+                        },
+                        "map": {
+                            "background": [("active", theme_colors["surface1"])]
+                        }
                     }
                 },
-                "TCombobox": {
-                    "configure": {
-                        "foreground": theme_colors["text"],
-                        "fieldbackground": theme_colors["surface0"],
-                        "selectbackground": theme_colors["accent_blue"],
-                        "selectforeground": theme_colors["base"],
-                    }
-                },
-            },
-        )
-        style.theme_use("custom_theme")
+            )
+            style.theme_use("custom_theme")
 
-        self.root.option_add("*TCombobox*Listbox.background", theme_colors["surface0"])
-        self.root.option_add("*TCombobox*Listbox.foreground", theme_colors["text"])
-        self.root.option_add(
-            "*TCombobox*Listbox.selectBackground", theme_colors["accent_blue"]
-        )
-        self.root.option_add(
-            "*TCombobox*Listbox.selectForeground", theme_colors["base"]
-        )
+        # Re-apply settings if theme already exists (useful if configure_theme is called again)
+        style.configure("TFrame", background=theme_colors["base"])
+        style.configure("TLabel", background=theme_colors["base"], foreground=theme_colors["text"])
+        style.configure("TButton", background=theme_colors["surface1"], foreground=theme_colors["text"])
+        style.map("TButton", background=[("active", theme_colors["base"]), ("hover", theme_colors["surface0"])])
+        style.configure("TEntry", foreground=theme_colors["text"], fieldbackground=theme_colors["surface0"], insertcolor=theme_colors["text"])
+        style.map("TEntry", bordercolor=[("focus", theme_colors["accent_blue"])], relief=[("focus", "solid")])
+        style.configure("TCombobox", foreground=theme_colors["text"], fieldbackground=theme_colors["surface0"], background=theme_colors["surface0"], arrowcolor=theme_colors["text"])
+        style.map("TCombobox", bordercolor=[("focus", theme_colors["accent_blue"])], relief=[("focus", "solid")])
+        style.configure("Vertical.TScrollbar", background=theme_colors["surface0"], troughcolor=theme_colors["base"], bordercolor=theme_colors["surface0"], arrowcolor=theme_colors["text"])
+        style.map("Vertical.TScrollbar", background=[("active", theme_colors["surface1"])])
+
+
+        # Configure Combobox dropdown list colors (using option_add for listbox part)
+        # These need to be set before the Combobox is created ideally, but setting them here works too.
+        self.root.option_add("*TCombobox*Listbox.background", theme_colors["surface0"], priority=80)
+        self.root.option_add("*TCombobox*Listbox.foreground", theme_colors["text"], priority=80)
+        self.root.option_add("*TCombobox*Listbox.selectBackground", theme_colors["accent_blue"], priority=80)
+        self.root.option_add("*TCombobox*Listbox.selectForeground", theme_colors["base"], priority=80)
+        self.root.option_add("*TCombobox*Listbox.font", ("Helvetica", 9), priority=80) # Consistent font
+        self.root.option_add("*TCombobox*Listbox.relief", "flat", priority=80)
+        self.root.option_add("*TCombobox*Listbox.borderwidth", 0, priority=80)
+        self.root.option_add("*TCombobox*Listbox.highlightthickness", 0, priority=80)
+
 
     def switch_theme(self, theme_name):
-        """Switches the application theme and updates all widgets."""
-        if theme_name in self.themes:
-            self.current_theme = theme_name
-            self.configure_theme()  # Re-configure the base theme settings
-            self.refresh_ui_with_theme()  # Then refresh all UI elements
-            self.save_last_used_theme(theme_name)
+        """Saves the selected theme and restarts the application to apply it."""
+        if theme_name in self.themes and theme_name != self.current_theme:
+            if messagebox.askyesno("Restart Required",
+                                   "Changing the theme requires restarting the application. Restart now?"):
+                # Save the new theme choice
+                self.save_last_used_theme(theme_name)
 
-    def refresh_ui_with_theme(self):
-        """Refreshes all UI components with the current theme colors."""
-        theme_colors = self.themes[self.current_theme]
+                # Perform necessary cleanup before restart
+                snippet_id = self.current_snippet_id()
+                if snippet_id:
+                    self.save_last_used_snippet(snippet_id)
+                if hasattr(self, "conn"):
+                    try:
+                        self.conn.close()
+                    except sqlite3.Error as e:
+                        print(f"Error closing database before restart: {e}") # Log error but continue
 
-        # Update dynamic widgets
-        self.listbox.config(
-            bg=theme_colors["surface0"],
-            fg=theme_colors["text"],
-            selectbackground=theme_colors["accent_blue"],
-            selectforeground=theme_colors["base"],
-        )
-        self.code_editor.config(
-            bg=theme_colors["surface0"],
-            fg=theme_colors["text"],
-            insertbackground=theme_colors["text"],
-            selectbackground=theme_colors["accent_blue"],
-            selectforeground=theme_colors["base"],
-        )
+                # Restart the application
+                try:
+                    python = sys.executable
+                    # Ensure sys.argv[0] is the script path, handle potential issues
+                    script_path = os.path.abspath(sys.argv[0])
+                    os.execv(python, [python, script_path] + sys.argv[1:])
+                except Exception as e:
+                    messagebox.showerror("Restart Error", f"Failed to restart the application: {e}\nPlease restart manually.")
+                    # Fallback: destroy the current window if restart fails
+                    self.root.destroy()
+            else:
+                 # User cancelled restart, revert the combobox selection back to the current theme
+                 self.theme_var.set(self.current_theme)
+        elif theme_name == self.current_theme:
+             # If the selected theme is already the current one, do nothing.
+             pass
+        else:
+            # If theme_name is somehow invalid (shouldn't happen with Combobox)
+            messagebox.showwarning("Theme Error", f"Theme '{theme_name}' not found.")
+            self.theme_var.set(self.current_theme) # Reset combobox
 
-        # Update the title bar
-        self.set_title_bar()
 
-        # Since ttk widgets are already styled in configure_theme, we just need to refresh
-        # any direct tk widgets or reapply styles if necessary.
+    # refresh_ui_with_theme is no longer needed as theme changes require restart
+    # def refresh_ui_with_theme(self):
+    #     ...
+
 
     def create_table(self):
-        cursor = self.conn.cursor()
-        cursor.execute(
-            """CREATE TABLE IF NOT EXISTS snippets
-                          (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                           title TEXT NOT NULL,
-                           category TEXT,
-                           code TEXT NOT NULL)"""
-        )
-        self.conn.commit()
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(
+                """CREATE TABLE IF NOT EXISTS snippets
+                              (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                               title TEXT NOT NULL,
+                               category TEXT,
+                               code TEXT NOT NULL)"""
+            )
+            # Add index for faster title lookups if it doesn't exist
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_snippet_title ON snippets (title)")
+            self.conn.commit()
+        except sqlite3.Error as e:
+            messagebox.showerror("Database Error", f"Failed to create snippets table: {e}")
+            self.root.destroy() # Exit if table creation fails
+
 
     def focus_input(self, widget):
         widget.focus_set()
@@ -435,111 +608,141 @@ class CodeStorageApp:
     def create_widgets(self):
         theme_colors = self.themes[self.current_theme]
 
-        # Search Frame
-        search_frame = ttk.Frame(self.root)
-        search_frame.pack(pady=10, padx=10, fill=tk.X)
+        # Main Content Frame (packed after title bar)
+        main_frame = ttk.Frame(self.root, name="!main_frame")
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10)) # Reduced bottom padding
 
-        ttk.Label(search_frame, text="Search:").pack(side=tk.LEFT, padx=(0, 5))
+        # --- Left Pane: Search, Theme, Listbox ---
+        left_pane = ttk.Frame(main_frame, name="!left_pane")
+        left_pane.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
+
+        # Search and Theme Frame (combined at the top of left pane)
+        top_left_frame = ttk.Frame(left_pane, name="!top_left_frame")
+        top_left_frame.pack(pady=(0, 10), fill=tk.X) # Pad below this frame
+
+        search_label = ttk.Label(top_left_frame, text="Search:")
+        search_label.grid(row=0, column=0, sticky=tk.W, padx=(0, 5))
+
         self.search_var = tk.StringVar()
-        search_entry = ttk.Entry(search_frame, textvariable=self.search_var)
-        search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        search_entry = ttk.Entry(top_left_frame, textvariable=self.search_var, width=15) # Adjust width as needed
+        search_entry.grid(row=0, column=1, sticky=tk.EW, padx=(0,10))
         search_entry.bind("<KeyRelease>", self.search_snippets)
         self.root.bind("<Control-k>", lambda event: self.focus_input(search_entry))
 
-        # Theme selection
-        theme_frame = ttk.Frame(search_frame)
-        theme_frame.pack(side=tk.RIGHT, padx=5)
-        ttk.Label(theme_frame, text="Theme:").pack(side=tk.LEFT, padx=(0, 5))
-        # Use the existing theme_var instead of creating a new one
+        theme_label = ttk.Label(top_left_frame, text="Theme:")
+        theme_label.grid(row=0, column=2, sticky=tk.W, padx=(0, 5))
+
         theme_combo = ttk.Combobox(
-            theme_frame,
+            top_left_frame,
             textvariable=self.theme_var,
             values=list(self.themes.keys()),
-            width=10,
+            width=12, # Adjust width
+            state="readonly" # Prevent typing custom themes
         )
-        theme_combo.pack(side=tk.LEFT)
+        theme_combo.grid(row=0, column=3, sticky=tk.E)
         theme_combo.bind(
             "<<ComboboxSelected>>", lambda e: self.switch_theme(self.theme_var.get())
         )
 
-        # Main Content Frame
-        main_frame = ttk.Frame(self.root)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=20)
+        # Configure grid expansion for search entry
+        top_left_frame.columnconfigure(1, weight=1)
 
-        # Listbox for snippets
-        listbox_frame = ttk.Frame(main_frame)
-        listbox_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
 
-        ttk.Label(listbox_frame, text="Snippets").pack(anchor=tk.W, pady=(0, 5))
+        # Listbox Frame (below search/theme)
+        listbox_frame = ttk.Frame(left_pane, name="!listbox_frame")
+        listbox_frame.pack(fill=tk.BOTH, expand=True) # Fill remaining space in left pane
+
+        # Snippets Label removed, implied by the listbox
 
         self.listbox = tk.Listbox(
             listbox_frame,
-            width=25,
+            width=25, # Keep width reasonable
             bg=theme_colors["surface0"],
             fg=theme_colors["text"],
             selectbackground=theme_colors["accent_blue"],
             selectforeground=theme_colors["base"],
-            borderwidth=1,
-            highlightthickness=0,
+            borderwidth=0, # No border for the listbox itself
+            highlightthickness=1, # Use highlight for focus indication
+            highlightcolor=theme_colors["accent_blue"], # Color when focused
+            highlightbackground=theme_colors["surface0"], # Color when not focused
+            relief="flat",
+            exportselection=False, # Prevent selection loss when focus moves
+            font=("Helvetica", 10)
         )
+        # Pack listbox first, then scrollbar
         self.listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.listbox.bind("<<ListboxSelect>>", self.show_snippet)
-        self.listbox.bind(":", self.initiate_vim_command)  # Bind colon key
-        self.listbox.bind("j", self.move_selection_down)  # Bind j key
-        self.listbox.bind("k", self.move_selection_up)  # Bind k key
 
         listbox_scrollbar = ttk.Scrollbar(
-            listbox_frame, orient="vertical", command=self.listbox.yview
+            listbox_frame, orient="vertical", command=self.listbox.yview, style="Vertical.TScrollbar"
         )
         listbox_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
         self.listbox.config(yscrollcommand=listbox_scrollbar.set)
 
-        # Details Frame
-        details_frame = ttk.Frame(main_frame)
+        # Bindings for Listbox
+        self.listbox.bind("<<ListboxSelect>>", self.show_snippet)
+        self.listbox.bind(":", self.initiate_vim_command)  # Bind colon key
+        self.listbox.bind("<KeyPress-j>", self.move_selection_down)  # Use KeyPress for holding
+        self.listbox.bind("<KeyPress-k>", self.move_selection_up)  # Use KeyPress for holding
+        self.listbox.bind("<Return>", self.show_snippet) # Show snippet on Enter
+
+
+        # --- Right Pane: Details ---
+        details_frame = ttk.Frame(main_frame, name="!details_frame")
         details_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # Title and Category
-        form_frame = ttk.Frame(details_frame)
-        form_frame.pack(fill=tk.X, pady=(0, 20))
+        # Title and Category Form Frame
+        form_frame = ttk.Frame(details_frame, name="!form_frame")
+        form_frame.pack(fill=tk.X, pady=(0, 10)) # Pad below form
 
         ttk.Label(form_frame, text="Title:").grid(
-            row=0, column=0, sticky=tk.W, padx=(0, 5), pady=10
+            row=0, column=0, sticky=tk.W, padx=(0, 5), pady=(0, 5) # Reduced padding
         )
         self.title_var = tk.StringVar()
         title_entry = ttk.Entry(form_frame, textvariable=self.title_var)
-        title_entry.grid(row=0, column=1, sticky=tk.EW, pady=10)
+        title_entry.grid(row=0, column=1, sticky=tk.EW, pady=(0, 5))
 
         ttk.Label(form_frame, text="Category:").grid(
-            row=1, column=0, sticky=tk.W, padx=(0, 5), pady=10
+            row=1, column=0, sticky=tk.W, padx=(0, 5), pady=(0, 5)
         )
         self.category_var = tk.StringVar()
         self.category_combo = ttk.Combobox(form_frame, textvariable=self.category_var)
-        self.category_combo.grid(row=1, column=1, sticky=tk.EW, pady=5)
+        # Populate values later in populate_categories
+        self.category_combo.grid(row=1, column=1, sticky=tk.EW, pady=(0, 5))
 
-        form_frame.columnconfigure(1, weight=1)
+        form_frame.columnconfigure(1, weight=1) # Allow entry/combo to expand
 
         # Code Editor
-        ttk.Label(details_frame, text="Code:").pack(anchor=tk.W)
+        code_label = ttk.Label(details_frame, text="Code:")
+        code_label.pack(anchor=tk.W, pady=(0, 2)) # Reduced padding
+
         self.code_editor = scrolledtext.ScrolledText(
             details_frame,
             wrap=tk.WORD,
             bg=theme_colors["surface0"],
             fg=theme_colors["text"],
-            insertbackground=theme_colors["text"],
+            insertbackground=theme_colors["text"], # Cursor color
             selectbackground=theme_colors["accent_blue"],
             selectforeground=theme_colors["base"],
             font=("Consolas", 10),
+            borderwidth=0, # No border for the text area
+            highlightthickness=1, # Use highlight for focus
+            highlightcolor=theme_colors["accent_blue"],
+            highlightbackground=theme_colors["surface0"],
+            relief="flat",
+            padx=5, # Internal padding
+            pady=5
         )
-        self.code_editor.pack(fill=tk.BOTH, expand=True, pady=(5, 20))
+        self.code_editor.pack(fill=tk.BOTH, expand=True, pady=(0, 10)) # Pad below editor
 
-        # Buttons
-        button_frame = ttk.Frame(details_frame)
+        # Buttons Frame
+        button_frame = ttk.Frame(details_frame, name="!button_frame")
         button_frame.pack(fill=tk.X)
 
-        save_btn = ttk.Button(button_frame, text="Save", command=self.save_snippet)
+        save_btn = ttk.Button(button_frame, text="Save (Ctrl+S)", command=self.save_snippet)
         save_btn.pack(side=tk.LEFT, padx=(0, 5))
 
-        clear_btn = ttk.Button(button_frame, text="Clear", command=self.clear_fields)
+        clear_btn = ttk.Button(button_frame, text="Clear (Ctrl+T)", command=self.clear_fields)
         clear_btn.pack(side=tk.LEFT, padx=5)
         self.root.bind("<Control-t>", lambda event: self.clear_fields())
 
@@ -548,87 +751,99 @@ class CodeStorageApp:
         )
         delete_btn.pack(side=tk.LEFT, padx=5)
 
-        copy_btn = ttk.Button(button_frame, text="Copy", command=self.copy_snippet)
+        copy_btn = ttk.Button(button_frame, text="Copy (Ctrl+C)", command=self.copy_snippet)
         copy_btn.pack(side=tk.LEFT, padx=5)
         self.root.bind("<Control-c>", lambda event: self.copy_snippet())
 
+        # Move shortcuts button to the right
         shortcuts_btn = ttk.Button(
-            button_frame, text="Shortcuts", command=self.show_keyboard_shortcuts
+            button_frame, text="Shortcuts (Ctrl+H)", command=self.show_keyboard_shortcuts
         )
         shortcuts_btn.pack(side=tk.RIGHT, padx=5)
 
-        # Vim-like command entry (initially hidden)
-        self.vim_command_entry = ttk.Entry(main_frame)  # Parent to main_frame
-        self.vim_command_entry.pack(
-            side=tk.BOTTOM, pady=5, fill=tk.X
-        )  # Pack at the bottom
-        self.vim_command_entry.lower()  # Hide it behind other widgets initially
+
+        # Vim-like command entry (initially hidden, placed at bottom of main_frame)
+        self.vim_command_entry = ttk.Entry(main_frame, name="!vim_command_entry")
+        # Don't pack initially, use place or pack when needed
         self.vim_command_entry.bind("<Return>", self.process_vim_command)
         self.vim_command_entry.bind("<Escape>", self.hide_vim_command)
-        self.vim_command_entry.bind(
-            "<FocusOut>", self.hide_vim_command
-        )  # Hide if focus is lost
-        self.root.bind(
-            "<Alt-v>", lambda event: self.focus_input(self.vim_command_entry)
-        )
+        self.vim_command_entry.bind("<FocusOut>", self.hide_vim_command)
+        # Alt-v binding might conflict, consider changing or removing if problematic
+        # self.root.bind("<Alt-v>", lambda event: self.focus_input(self.vim_command_entry))
+
 
     def initiate_vim_command(self, event):
-        self.vim_command_entry.lift(self.root)  # Bring entry to front, relative to root
+        """Shows and focuses the Vim-like command entry at the bottom."""
+        # Place the entry at the bottom of the main_frame
+        self.vim_command_entry.place(relx=0, rely=1.0, relwidth=1.0, anchor=tk.SW)
+        self.vim_command_entry.lift() # Bring to front
+        self.vim_command_entry.delete(0, tk.END) # Clear previous command
+        self.vim_command_entry.insert(0, ":") # Start with colon
+        self.vim_command_entry.icursor(tk.END) # Move cursor to end
         self.vim_command_entry.focus_set()
-        self.vim_command_entry.selection_range(
-            0, tk.END
-        )  # Select all text for easy overwrite
+
 
     def move_selection_down(self, event):
+        """Moves listbox selection down by one, wraps around."""
         current_selection = self.listbox.curselection()
-        if not current_selection:
-            self.listbox.selection_set(0)
-            self.listbox.see(0)
-            self.show_snippet(None)
-            return
+        size = self.listbox.size()
+        if not size: return # Empty listbox
 
-        current_index = current_selection[0]
-        next_index = min(current_index + 1, self.listbox.size() - 1)
-        if next_index != current_index:
-            self.listbox.selection_clear(0, tk.END)
-            self.listbox.selection_set(next_index)
-            self.listbox.see(next_index)
-            self.show_snippet(None)
+        current_index = current_selection[0] if current_selection else -1
+        next_index = (current_index + 1) % size # Wrap around
+
+        self.listbox.selection_clear(0, tk.END)
+        self.listbox.selection_set(next_index)
+        self.listbox.see(next_index)
+        self.show_snippet(None) # Update details pane
+        return "break" # Prevent default listbox behavior if any
+
 
     def move_selection_up(self, event):
+        """Moves listbox selection up by one, wraps around."""
         current_selection = self.listbox.curselection()
-        if not current_selection:
-            self.listbox.selection_set(tk.END)
-            self.listbox.see(tk.END)
-            self.show_snippet(None)
-            return
+        size = self.listbox.size()
+        if not size: return # Empty listbox
 
-        current_index = current_selection[0]
-        prev_index = max(current_index - 1, 0)
-        if prev_index != current_index:
-            self.listbox.selection_clear(0, tk.END)
-            self.listbox.selection_set(prev_index)
-            self.listbox.see(prev_index)
-            self.show_snippet(None)
+        current_index = current_selection[0] if current_selection else 0
+        prev_index = (current_index - 1 + size) % size # Wrap around
+
+        self.listbox.selection_clear(0, tk.END)
+        self.listbox.selection_set(prev_index)
+        self.listbox.see(prev_index)
+        self.show_snippet(None) # Update details pane
+        return "break" # Prevent default listbox behavior
+
 
     def process_vim_command(self, event):
-        command = self.vim_command_entry.get()
+        """Processes the command entered in the vim command entry."""
+        command = self.vim_command_entry.get().strip()
         self.hide_vim_command(event)  # Hide entry after processing
 
-        if command.startswith(":"):
+        if command.startswith(":") and len(command) > 1:
             try:
                 snippet_number = int(command[1:])
                 self.go_to_snippet_by_number(snippet_number)
             except ValueError:
-                messagebox.showerror("Command Error", "Invalid snippet number.")
+                messagebox.showerror("Command Error", f"Invalid snippet number: '{command[1:]}'", parent=self.root)
+            except Exception as e:
+                 messagebox.showerror("Command Error", f"Error processing command: {e}", parent=self.root)
+        elif command == ":": # Just colon entered
+            pass # Do nothing, just hide
         else:
-            messagebox.showerror("Command Error", "Invalid command.")
+            messagebox.showerror("Command Error", f"Invalid command: '{command}'", parent=self.root)
+        return "break" # Prevent further processing
 
-    def hide_vim_command(self, event):
-        self.vim_command_entry.delete(0, tk.END)  # Clear entry for next command
-        self.vim_command_entry.lower()  # Hide the entry
+
+    def hide_vim_command(self, event=None):
+        """Hides the Vim-like command entry."""
+        self.vim_command_entry.place_forget() # Remove from layout
+        self.listbox.focus_set() # Return focus to the listbox
+        return "break"
+
 
     def go_to_snippet_by_number(self, number):
+        """Navigates to the snippet by its 1-based listbox index."""
         index = number - 1  # 1-based to 0-based index
         if 0 <= index < self.listbox.size():
             self.listbox.selection_clear(0, tk.END)
@@ -636,153 +851,328 @@ class CodeStorageApp:
             self.listbox.see(index)
             self.show_snippet(None)
         else:
-            messagebox.showerror("Navigation Error", "Snippet number out of range.")
+            messagebox.showerror("Navigation Error", f"Snippet number {number} out of range (1-{self.listbox.size()}).", parent=self.root)
+
 
     def populate_listbox(self, search_query=None):
-        self.listbox.delete(0, tk.END)
-        cursor = self.conn.cursor()
+        """Populates the listbox with snippet titles, optionally filtered by search."""
+        try:
+            # Store current selection if any
+            current_selection_index = self.listbox.curselection()
+            selected_title = self.listbox.get(current_selection_index[0]) if current_selection_index else None
 
-        if search_query:
-            cursor.execute(
-                """SELECT id, title FROM snippets
-                           WHERE title LIKE ? OR category LIKE ? OR code LIKE ?""",
-                (f"%{search_query}%", f"%{search_query}%", f"%{search_query}%"),
-            )
-        else:
-            cursor.execute("SELECT id, title FROM snippets ORDER BY title")
+            self.listbox.delete(0, tk.END)
+            cursor = self.conn.cursor()
+            query = "SELECT id, title FROM snippets"
+            params = []
 
-        for row in cursor.fetchall():
-            self.listbox.insert(tk.END, row[1])
-        cursor.close()
+            if search_query:
+                query += " WHERE title LIKE ? OR category LIKE ? OR code LIKE ?"
+                like_query = f"%{search_query}%"
+                params.extend([like_query, like_query, like_query])
+
+            query += " ORDER BY title COLLATE NOCASE" # Case-insensitive sorting
+
+            cursor.execute(query, params)
+
+            new_selection_index = -1
+            count = 0
+            for i, row in enumerate(cursor.fetchall()):
+                self.listbox.insert(tk.END, row[1])
+                if selected_title and row[1] == selected_title:
+                    new_selection_index = i
+                count += 1
+
+            cursor.close()
+
+            # Restore selection if the item still exists
+            if new_selection_index != -1:
+                self.listbox.selection_set(new_selection_index)
+                self.listbox.see(new_selection_index)
+            elif count > 0 and not search_query: # If no search and previous selection gone, select first
+                 self.listbox.selection_set(0)
+                 self.listbox.see(0)
+                 self.show_snippet(None) # Show the first item's details
+
+        except sqlite3.Error as e:
+            messagebox.showerror("Database Error", f"Failed to populate snippets: {e}", parent=self.root)
+        except tk.TclError as e:
+             print(f"Error updating listbox: {e}") # Log non-critical UI errors
+
 
     def populate_categories(self):
-        cursor = self.conn.cursor()
-        cursor.execute("SELECT DISTINCT category FROM snippets")
-        categories = [row[0] for row in cursor.fetchall() if row[0]]
-        self.category_combo["values"] = categories
-        cursor.close()
+        """Populates the category combobox with distinct categories from the database."""
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT DISTINCT category FROM snippets WHERE category IS NOT NULL AND category != '' ORDER BY category COLLATE NOCASE")
+            categories = [row[0] for row in cursor.fetchall()]
+            self.category_combo["values"] = categories
+            cursor.close()
+        except sqlite3.Error as e:
+             messagebox.showerror("Database Error", f"Failed to load categories: {e}", parent=self.root)
+
 
     def copy_snippet(self):
-        pyperclip.copy(self.code_editor.get("1.0", tk.END))
-        messagebox.showinfo("Success", "Successfully Copied")
+        """Copies the content of the code editor to the clipboard."""
+        try:
+            code_content = self.code_editor.get("1.0", tk.END).strip()
+            if code_content:
+                pyperclip.copy(code_content)
+                # Simple visual feedback might be better than a messagebox
+                original_bg = self.copy_btn.cget("background")
+                self.copy_btn.configure(text="Copied!")
+                self.root.after(1000, lambda: self.copy_btn.configure(text="Copy (Ctrl+C)"))
+                # messagebox.showinfo("Success", "Snippet copied to clipboard.", parent=self.root)
+            else:
+                messagebox.showwarning("Copy Warning", "Nothing to copy.", parent=self.root)
+        except pyperclip.PyperclipException as e:
+            messagebox.showerror("Clipboard Error", f"Could not copy to clipboard: {e}", parent=self.root)
+        except tk.TclError as e:
+             print(f"Error getting text from code editor: {e}")
+
 
     def save_snippet(self):
+        """Saves the current snippet (new or update)."""
         title = self.title_var.get().strip()
         category = self.category_var.get().strip()
         code = self.code_editor.get("1.0", tk.END).strip()
+
         if not title or not code:
-            messagebox.showwarning("Input Error", "Title and Code are required!")
+            messagebox.showwarning("Input Error", "Title and Code fields cannot be empty.", parent=self.root)
             return
 
-        cursor = self.conn.cursor()
-        if self.current_snippet_id():
-            cursor.execute(
-                """UPDATE snippets SET
-                           title=?, category=?, code=?
-                           WHERE id=?""",
-                (title, category, code, self.current_snippet_id()),
-            )
-            message = "Snippet updated successfully"
-        else:
-            cursor.execute(
-                """INSERT INTO snippets (title, category, code)
-                           VALUES (?, ?, ?)""",
-                (title, category, code),
-            )
-            cursor.execute("SELECT last_insert_rowid()")
-            new_id = cursor.fetchone()[0]
-            self.save_last_used_snippet(new_id)
-            message = "Snippet saved successfully"
+        current_id = self.current_snippet_id()
+        message = ""
+        new_id = None
 
-        self.conn.commit()
-        self.populate_listbox()
-        self.populate_categories()
-        messagebox.showinfo("Success", message)
+        try:
+            cursor = self.conn.cursor()
+            if current_id:
+                # Update existing snippet
+                cursor.execute(
+                    """UPDATE snippets SET title=?, category=?, code=? WHERE id=?""",
+                    (title, category, code, current_id),
+                )
+                message = f"Snippet '{title}' updated successfully."
+                new_id = current_id # Keep track of the ID
+            else:
+                # Insert new snippet
+                cursor.execute(
+                    """INSERT INTO snippets (title, category, code) VALUES (?, ?, ?)""",
+                    (title, category, code),
+                )
+                new_id = cursor.lastrowid # Get the ID of the newly inserted row
+                message = f"Snippet '{title}' saved successfully."
+
+            self.conn.commit()
+            cursor.close()
+
+            # Refresh UI
+            self.populate_listbox(self.search_var.get()) # Repopulate with current search
+            self.populate_categories()
+
+            # Reselect the saved/updated snippet in the listbox
+            if new_id:
+                cursor = self.conn.cursor()
+                cursor.execute("SELECT title FROM snippets WHERE id=?", (new_id,))
+                title_result = cursor.fetchone()
+                cursor.close()
+                if title_result:
+                    new_title = title_result[0]
+                    listbox_items = self.listbox.get(0, tk.END)
+                    if new_title in listbox_items:
+                        index = listbox_items.index(new_title)
+                        self.listbox.selection_clear(0, tk.END)
+                        self.listbox.selection_set(index)
+                        self.listbox.see(index)
+                        # Update last used snippet only if it's a new one or explicitly selected
+                        self.save_last_used_snippet(new_id)
+
+
+            # Show success feedback (optional, could use status bar later)
+            # messagebox.showinfo("Success", message, parent=self.root)
+
+        except sqlite3.Error as e:
+            messagebox.showerror("Database Error", f"Failed to save snippet: {e}", parent=self.root)
+        except tk.TclError as e:
+             print(f"Error getting text from editor during save: {e}")
+
 
     def delete_snippet(self):
-        if not self.current_snippet_id():
-            messagebox.showinfo("Info", "No snippet selected to delete")
+        """Deletes the currently selected snippet."""
+        snippet_id = self.current_snippet_id()
+        if not snippet_id:
+            messagebox.showinfo("Info", "No snippet selected to delete.", parent=self.root)
             return
+
+        # Get title for confirmation message
+        selected_title = self.listbox.get(self.listbox.curselection()[0])
 
         if messagebox.askyesno(
-            "Confirm Delete", "Are you sure you want to delete this snippet?"
+            "Confirm Delete", f"Are you sure you want to delete the snippet '{selected_title}'?", parent=self.root
         ):
-            cursor = self.conn.cursor()
-            cursor.execute(
-                "DELETE FROM snippets WHERE id=?", (self.current_snippet_id(),)
-            )
-            self.conn.commit()
-            self.populate_listbox()
-            self.clear_fields()
-            messagebox.showinfo("Success", "Snippet deleted successfully")
+            try:
+                cursor = self.conn.cursor()
+                cursor.execute("DELETE FROM snippets WHERE id=?", (snippet_id,))
+                self.conn.commit()
+                cursor.close()
+
+                # Clear fields and refresh list
+                self.clear_fields() # Clear details first
+                self.populate_listbox(self.search_var.get()) # Refresh list with current search
+                self.populate_categories() # Refresh categories
+
+                # Optionally show success message
+                # messagebox.showinfo("Success", f"Snippet '{selected_title}' deleted.", parent=self.root)
+
+                # Check if the deleted snippet was the last used one and clear setting if so
+                cursor = self.conn.cursor()
+                cursor.execute("SELECT value FROM settings WHERE key=?", ("last_used_snippet",))
+                result = cursor.fetchone()
+                if result and int(result[0]) == snippet_id:
+                    cursor.execute("DELETE FROM settings WHERE key=?", ("last_used_snippet",))
+                    self.conn.commit()
+                cursor.close()
+
+
+            except sqlite3.Error as e:
+                messagebox.showerror("Database Error", f"Failed to delete snippet: {e}", parent=self.root)
+
 
     def show_snippet(self, event):
+        """Displays the selected snippet's details in the editor."""
         selection = self.listbox.curselection()
         if not selection:
+            # If nothing is selected (e.g., after delete/clear), ensure fields are clear
+            # self.clear_fields() # Avoid clearing if selection lost focus temporarily
             return
 
-        cursor = self.conn.cursor()
-        cursor.execute(
-            "SELECT * FROM snippets WHERE title=?", (self.listbox.get(selection[0]),)
-        )
-        row = cursor.fetchone()
-        cursor.close()
+        selected_title = self.listbox.get(selection[0])
+        try:
+            cursor = self.conn.cursor()
+            # Fetch by title, assuming titles are unique enough for selection context
+            cursor.execute("SELECT * FROM snippets WHERE title=?", (selected_title,))
+            row = cursor.fetchone()
+            cursor.close()
 
-        if row:
-            self.title_var.set(row[1])
-            self.category_var.set(row[2] if row[2] else "")
-            self.code_editor.delete("1.0", tk.END)
-            self.code_editor.insert("1.0", row[3])
-            self.save_last_used_snippet(row[0])
+            if row:
+                snippet_id = row[0]
+                self.title_var.set(row[1])
+                self.category_var.set(row[2] if row[2] else "")
+                # Check if editor content is already the same to avoid unnecessary updates/flicker
+                current_code = self.code_editor.get("1.0", tk.END).strip()
+                new_code = row[3]
+                if current_code != new_code:
+                    self.code_editor.delete("1.0", tk.END)
+                    self.code_editor.insert("1.0", new_code)
+                # Save this as the last used snippet upon selection
+                self.save_last_used_snippet(snippet_id)
+            else:
+                # Snippet title exists in listbox but not found in DB (should not happen with proper refresh)
+                messagebox.showerror("Error", f"Could not find details for snippet '{selected_title}'.", parent=self.root)
+                self.populate_listbox(self.search_var.get()) # Refresh listbox
+
+        except sqlite3.Error as e:
+             messagebox.showerror("Database Error", f"Failed to load snippet details: {e}", parent=self.root)
+        except tk.TclError as e:
+             print(f"Error updating UI for snippet '{selected_title}': {e}")
+
 
     def current_snippet_id(self):
+        """Gets the database ID of the currently selected snippet in the listbox."""
         selection = self.listbox.curselection()
         if not selection:
             return None
 
-        cursor = self.conn.cursor()
-        cursor.execute(
-            "SELECT id FROM snippets WHERE title=?", (self.listbox.get(selection[0]),)
-        )
-        row = cursor.fetchone()
-        return row[0] if row else None
+        selected_title = self.listbox.get(selection[0])
+        try:
+            cursor = self.conn.cursor()
+            # Fetch ID based on the selected title
+            cursor.execute("SELECT id FROM snippets WHERE title=?", (selected_title,))
+            row = cursor.fetchone()
+            cursor.close()
+            return row[0] if row else None
+        except sqlite3.Error as e:
+            print(f"Database error getting current snippet ID: {e}")
+            return None
+
 
     def clear_fields(self):
+        """Clears the title, category, and code editor fields."""
         self.title_var.set("")
         self.category_var.set("")
         self.code_editor.delete("1.0", tk.END)
-        self.listbox.selection_clear(0, tk.END)
+        self.listbox.selection_clear(0, tk.END) # Deselect item in listbox
+        # Optionally set focus to title or search
+        # self.title_entry.focus_set() # Assuming self.title_entry exists
+
 
     def search_snippets(self, event):
+        """Filters the listbox based on the search entry content."""
         search_query = self.search_var.get()
         self.populate_listbox(search_query)
 
+
     def __del__(self):
-        if hasattr(self, "conn"):
-            self.conn.close()
+        """Ensures database connection is closed when the object is destroyed."""
+        if hasattr(self, "conn") and self.conn:
+            try:
+                self.conn.close()
+            except sqlite3.Error as e:
+                # Might be called during interpreter shutdown, print might not work reliably
+                # print(f"Error closing database in __del__: {e}")
+                pass
+
 
     def save_last_used_theme(self, theme_name):
+        """Saves the last used theme name and prompts user to restart."""
         if theme_name:
-            cursor = self.conn.cursor()
-            cursor.execute(
-                "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
-                ("last_used_theme", theme_name),
-            )
-            self.conn.commit()
+            try:
+                cursor = self.conn.cursor()
+                cursor.execute(
+                    "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+                    ("last_used_theme", theme_name),
+                )
+                self.conn.commit()
+                cursor.close()
+                # Inform user that a restart is required for the theme change
+                messagebox.showinfo(
+                    "Theme Changed",
+                    f"Theme set to '{theme_name}'. Please restart the application for the change to take full effect.",
+                    parent=self.root
+                )
+            except sqlite3.Error as e:
+                 print(f"Database error saving last theme: {e}")
+                 messagebox.showerror("Database Error", f"Failed to save theme setting: {e}", parent=self.root)
+
 
     def load_last_used_theme(self):
-        cursor = self.conn.cursor()
-        cursor.execute("SELECT value FROM settings WHERE key=?", ("last_used_theme",))
-        result = cursor.fetchone()
-        if result:
-            last_theme_name = result[0]
-            if last_theme_name in self.themes:
-                self.current_theme = last_theme_name
-                # Updated to use the theme_var that's now initialized earlier
-                self.theme_var.set(last_theme_name)
+        """Loads the last used theme name from settings and sets it as current for startup."""
+        # This function ensures the theme selected in the previous session is loaded when the app starts.
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT value FROM settings WHERE key=?", ("last_used_theme",))
+            result = cursor.fetchone()
+            cursor.close()
+            if result:
+                last_theme_name = result[0]
+                if last_theme_name in self.themes:
+                    self.current_theme = last_theme_name
+                    # The actual theme application happens during initialization using self.current_theme
+                    # self.theme_var is updated in __init__ after this call
+                else:
+                    print(f"Warning: Last used theme '{last_theme_name}' not found. Using default.")
+                    # Keep the default self.current_theme set in __init__
+        except sqlite3.Error as e:
+            print(f"Database error loading last theme: {e}")
+            # Keep the default theme if loading fails
 
 
 if __name__ == "__main__":
     root = tk.Tk()
+    # Prevent the window from flashing before theme is applied
+    root.withdraw()
     app = CodeStorageApp(root)
+    # Make window visible after setup
+    root.deiconify()
     root.mainloop()
