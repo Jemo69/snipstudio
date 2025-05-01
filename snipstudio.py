@@ -15,7 +15,6 @@ class CodeStorageApp:
         # Define themes
 
         self.themes = themes
-       
 
         # Set default theme (will be overridden by loaded theme if available)
         self.current_theme = "catppuccin"
