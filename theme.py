@@ -1,4 +1,5 @@
 themes = {
+
     "catppuccin_mocha": {  # darkest
         "base": "#1e1e2e",
         "mantle": "#181825",
@@ -27,6 +28,7 @@ themes = {
         "accent_blue": "#89b4fa",
         "accent_lavender": "#b4befe",
     },
+
     "catppuccin_macchiato": {  # darker
         "base": "#24273a",
         "mantle": "#1e2030",
@@ -55,6 +57,7 @@ themes = {
         "accent_blue": "#8aadf4",
         "accent_lavender": "#b7bdf8",
     },
+
     "catppuccin_frappe": {  # medium-dark
         "base": "#303446",
         "mantle": "#292c3c",
@@ -83,7 +86,10 @@ themes = {
         "accent_blue": "#8caaee",
         "accent_lavender": "#babbf1",
     },
+
     "catppuccin_latte": {  # light
+
+
         "base": "#eff1f5",
         "mantle": "#e6e9ef",
         "crust": "#dce0e8",
@@ -173,6 +179,7 @@ themes = {
         "base": "#011627",
         "surface0": "#112630",
         "surface1": "#2d3f44",
+
         "text": "#d6deeb",  # general text color
         "subtext0": "#637777",  # less prominent text
         "foreground": "#d6deeb",  # default foreground for code elements
@@ -219,6 +226,7 @@ themes = {
         "accent_sapphire": "#bf9140",
         "accent_blue": "#cca766",
         "accent_lavender": "#d9bd8c",
+
         "base": "#282828",
         "surface0": "#3c3836",
         "surface1": "#504945",
@@ -230,7 +238,10 @@ themes = {
         "accent_green": "#b8bb26",
         "accent_orange": "#fe8019",
         "accent_purple": "#d3869b",
+
         "accent_keyword": "#fb4934",  # often red in gruvbox
+
+        "accent_keyword": "#fb4934",  # Often 
         "accent_blue": "#83a598",
         "accent_yellow": "#fabd2f",
         "parameter": "#ebdbb2",
@@ -250,7 +261,9 @@ themes = {
         "accent_green": "#859900",
         "accent_orange": "#cb4b16",
         "accent_purple": "#d33682",
+
         "accent_keyword": "#cb4b16",  # often orange
+
         "accent_blue": "#268bd2",
         "accent_yellow": "#b58900",
         "parameter": "#93a1a1",
