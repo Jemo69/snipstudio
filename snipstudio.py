@@ -693,9 +693,17 @@ class CodeStorageApp:
         # Don't pack initially, use place or pack when needed
         self.vim_command_entry.bind("<Return>", self.process_vim_command)
         self.vim_command_entry.bind("<Escape>", self.hide_vim_command)
+
         self.vim_command_entry.bind("<FocusOut>", self.hide_vim_command)
         # Alt-v binding might conflict, consider changing or removing if problematic
         # self.root.bind("<Alt-v>", lambda event: self.focus_input(self.vim_command_entry))
+
+
+
+        self.vim_command_entry.bind("<FocusOut>", self.hide_vim_command) # Hide if focus is lost
+        self.root.bind('<Alt-v>',lambda event: self.focus_input(vim_command_entry)))
+
+
 
     def initiate_vim_command(self, event):
         """Shows and focuses the Vim-like command entry at the bottom."""

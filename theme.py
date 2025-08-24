@@ -1,5 +1,6 @@
 themes = {
-    "catppuccin_mocha": {  # Darkest
+
+    "catppuccin_mocha": {  # darkest
         "base": "#1e1e2e",
         "mantle": "#181825",
         "crust": "#11111b",
@@ -27,7 +28,8 @@ themes = {
         "accent_blue": "#89b4fa",
         "accent_lavender": "#b4befe",
     },
-    "catppuccin_macchiato": {  # Darker
+
+    "catppuccin_macchiato": {  # darker
         "base": "#24273a",
         "mantle": "#1e2030",
         "crust": "#181926",
@@ -55,7 +57,8 @@ themes = {
         "accent_blue": "#8aadf4",
         "accent_lavender": "#b7bdf8",
     },
-    "catppuccin_frappe": {  # Medium-Dark
+
+    "catppuccin_frappe": {  # medium-dark
         "base": "#303446",
         "mantle": "#292c3c",
         "crust": "#232634",
@@ -83,7 +86,10 @@ themes = {
         "accent_blue": "#8caaee",
         "accent_lavender": "#babbf1",
     },
-    "catppuccin_latte": {  # Light
+
+    "catppuccin_latte": {  # light
+
+
         "base": "#eff1f5",
         "mantle": "#e6e9ef",
         "crust": "#dce0e8",
@@ -120,7 +126,7 @@ themes = {
         "foreground": "#f8f8f2",
         "comment": "#6272a4",
         "selection": "#44475a",
-        "currentLine": "#44475a",
+        "currentline": "#44475a",
         "accent_cyan": "#8be9fd",
         "accent_green": "#50fa7b",
         "accent_orange": "#ffb86c",
@@ -173,23 +179,54 @@ themes = {
         "base": "#011627",
         "surface0": "#112630",
         "surface1": "#2d3f44",
-        "text": "#d6deeb",  # General text color
-        "subtext0": "#637777",  # Less prominent text
-        "foreground": "#d6deeb",  # Default foreground for code elements
+
+        "text": "#d6deeb",  # general text color
+        "subtext0": "#637777",  # less prominent text
+        "foreground": "#d6deeb",  # default foreground for code elements
         "comment": "#637777",
         "selection": "#1d3b53",
-        "accent_green": "#addb67",  # Strings, etc.
-        "accent_orange": "#f78c6c",  # Numbers, constants
-        "accent_purple": "#c792ea",  # Keywords, special constants
-        "accent_keyword": "#c792ea",  # Explicitly for keywords if needed
-        "accent_blue": "#82aaff",  # Functions, classes
-        "accent_yellow": "#ffcb8b",  # Variables, attributes
-        "parameter": "#d6deeb",  # Function parameters
-        "operator": "#c792ea",  # Operators
-        "punctuation": "#d6deeb",  # Punctuation like brackets, commas
-        "accent_red": "#f07178",  # Errors, important warnings
+        "accent_green": "#addb67",  # strings, etc.
+        "accent_orange": "#f78c6c",  # numbers, constants
+        "accent_purple": "#c792ea",  # keywords, special constants
+        "accent_keyword": "#c792ea",  # explicitly for keywords if needed
+        "accent_blue": "#82aaff",  # functions, classes
+        "accent_yellow": "#ffcb8b",  # variables, attributes
+        "parameter": "#d6deeb",  # function parameters
+        "operator": "#c792ea",  # operators
+        "punctuation": "#d6deeb",  # punctuation like brackets, commas
+        "accent_red": "#f07178",  # errors, important warnings
     },
-    "gruvbox_dark": {
+    "Celestial-Echoes":{ 
+        "base": "#050615",
+        "mantle": "#0a0c29",
+        "crust": "#131853",
+        "surface0": "#1d237c",
+        "surface1": "#272fa5",
+        "surface2": "#303bcf",
+        "overlay0": "#5a62d8",
+        "overlay1": "#8389e2",
+        "overlay2": "#acb1ec",
+        "text": "#040615",
+        "subtext0": "#090d2a",
+        "subtext1": "#121a54",
+        "foreground": "#1b267e",
+        "comment": "#2433a8",
+        "selection": "#2d40d2",
+        "accent_rosewater": "#15050d",
+        "accent_flamingo": "#2a091a",
+        "accent_pink": "#541233",
+        "accent_mauve": "#7d1c4d",
+        "accent_red": "#a72566",
+        "accent_maroon": "#d12e80",
+        "accent_peach": "#130e06",
+        "accent_yellow": "#261d0d",
+        "accent_green": "#4d3a19",
+        "accent_teal": "#735726",
+        "accent_sky": "#997433",
+        "accent_sapphire": "#bf9140",
+        "accent_blue": "#cca766",
+        "accent_lavender": "#d9bd8c",
+
         "base": "#282828",
         "surface0": "#3c3836",
         "surface1": "#504945",
@@ -201,7 +238,10 @@ themes = {
         "accent_green": "#b8bb26",
         "accent_orange": "#fe8019",
         "accent_purple": "#d3869b",
-        "accent_keyword": "#fb4934",  # Often red in gruvbox
+
+        "accent_keyword": "#fb4934",  # often red in gruvbox
+
+        "accent_keyword": "#fb4934",  # Often 
         "accent_blue": "#83a598",
         "accent_yellow": "#fabd2f",
         "parameter": "#ebdbb2",
@@ -221,7 +261,9 @@ themes = {
         "accent_green": "#859900",
         "accent_orange": "#cb4b16",
         "accent_purple": "#d33682",
-        "accent_keyword": "#cb4b16",  # Often orange
+
+        "accent_keyword": "#cb4b16",  # often orange
+
         "accent_blue": "#268bd2",
         "accent_yellow": "#b58900",
         "parameter": "#93a1a1",
